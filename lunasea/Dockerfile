@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1.6
 
 # ---- Build stage ----
-FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS build
+FROM --platform=$BUILDPLATFORM debian:trixie-slim AS build
 
-ARG FLUTTER_VERSION=3.29.3
+ARG FLUTTER_VERSION=3.41.9
 ARG FLAVOR=stable
 ARG BUILD=9999999999
 ARG COMMIT=master
@@ -26,7 +26,7 @@ RUN git clone --depth 1 --branch ${FLUTTER_VERSION} https://github.com/flutter/f
 WORKDIR /lunasea
 
 # Resolve dependencies (cache-friendly: only pubspec changes invalidate this layer)
-COPY pubspec.yaml pubspec.lock ./
+COPY pubspec.yaml ./
 RUN flutter pub get
 
 # Bring in the rest of the sources
@@ -45,6 +45,6 @@ RUN flutter build web --release \
         --dart-define=BUILD=${BUILD}
 
 # ---- Runtime stage ----
-FROM --platform=$TARGETPLATFORM nginx:alpine
+FROM --platform=$TARGETPLATFORM nginx:stable-alpine
 LABEL org.opencontainers.image.source="https://github.com/JagandeepBrar/lunasea"
 COPY --from=build /lunasea/build/web /usr/share/nginx/html

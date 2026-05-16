@@ -39,7 +39,7 @@ class _Desktop extends _Shared {
   @override
   Future<bool> save(BuildContext context, String name, List<int> data) async {
     try {
-      String? path = await FilePicker.platform.saveFile(
+      String? path = await FilePicker.saveFile(
         fileName: name,
         lockParentWindow: true,
       );
@@ -58,7 +58,7 @@ class _Desktop extends _Shared {
   @override
   Future<LunaFile?> read(BuildContext context, List<String> extensions) async {
     try {
-      final result = await FilePicker.platform.pickFiles(withData: true);
+      final result = await FilePicker.pickFiles(withData: true);
 
       if (result?.files.isNotEmpty ?? false) {
         String? _ext = result!.files[0].extension;
@@ -118,7 +118,7 @@ class _Mobile extends _Shared {
   @override
   Future<LunaFile?> read(BuildContext context, List<String> extensions) async {
     try {
-      final result = await FilePicker.platform.pickFiles(withData: true);
+      final result = await FilePicker.pickFiles(withData: true);
 
       if (result?.files.isNotEmpty ?? false) {
         String? _ext = result!.files[0].extension;
