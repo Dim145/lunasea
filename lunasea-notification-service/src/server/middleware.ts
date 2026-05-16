@@ -70,7 +70,7 @@ export async function extractDeviceToken(
 }
 
 export async function pullUserTokens(
-  request: express.Request,
+  request: express.Request<{ id: string }>,
   response: express.Response,
   next: express.NextFunction,
 ): Promise<void> {
@@ -97,7 +97,7 @@ export async function checkNotificationPassword(
 }
 
 export async function validateUser(
-  request: express.Request,
+  request: express.Request<{ id: string }>,
   response: express.Response,
   next: express.NextFunction,
 ): Promise<void> {
