@@ -1,6 +1,5 @@
 import { Server } from './server';
-import { Firebase, Redis } from './services';
+import { Ntfy } from './services';
 
-Firebase.initialize();
-Redis.initialize();
+Ntfy.initialize();
 Server.start();

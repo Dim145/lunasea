@@ -1,8 +1,6 @@
 import express from 'express';
-import basicauth from 'basic-auth';
 import { Models } from './';
-import { Firebase } from '../services';
-import { Constants, Logger, Notifications } from '../utils';
+import { Constants, Environment, Logger, Notifications } from '../utils';
 
 const logger = Logger.child({ module: 'middleware' });
 
@@ -11,7 +9,42 @@ export async function startNewRequest(
   response: express.Response,
   next: express.NextFunction,
 ): Promise<void> {
-  logger.info({ url: request.url, ...request.headers });
+  logger.info({ url: request.url, method: request.method });
+  next();
+}
+
+export async function checkWebhookAuth(
+  request: express.Request,
+  response: express.Response,
+  next: express.NextFunction,
+): Promise<void> {
+  const expected = Environment.WEBHOOK_TOKEN.readOptional();
+  if (!expected) {
+    next();
+    return;
+  }
+  const header = request.headers.authorization;
+  if (header === `Bearer ${expected}`) {
+    next();
+    return;
+  }
+  logger.warn({ url: request.url }, 'Rejected webhook with bad or missing Authorization header');
+  response.status(401).json(<Models.Response>{ message: Constants.MESSAGE.UNAUTHORIZED });
+}
+
+export async function extractTopic(
+  request: express.Request<{ topic: string }>,
+  response: express.Response,
+  next: express.NextFunction,
+): Promise<void> {
+  const topic = request.params.topic;
+  if (!topic) {
+    response.status(400).json(<Models.Response>{ message: Constants.MESSAGE.NO_TOPIC_SUPPLIED });
+    return;
+  }
+  response.locals.topic = topic;
+  response.locals.profile = (request.query.profile as string | undefined) ?? 'default';
+  logger.debug({ topic, profile: response.locals.profile });
   next();
 }
 
@@ -20,13 +53,13 @@ export async function extractNotificationOptions(
   response: express.Response,
   next: express.NextFunction,
 ): Promise<void> {
-  const getSound = (sound: any): boolean => {
-    return sound !== 'false';
-  };
+  const getSound = (sound: unknown): boolean => sound !== 'false';
 
-  const getInterruptionLevel = (level: any): Notifications.iOSInterruptionLevel => {
-    const idx = Object.values(Notifications.iOSInterruptionLevel).indexOf(level) !== -1;
-    if (idx) return level as Notifications.iOSInterruptionLevel;
+  const getInterruptionLevel = (level: unknown): Notifications.iOSInterruptionLevel => {
+    const valid = Object.values(Notifications.iOSInterruptionLevel) as string[];
+    if (typeof level === 'string' && valid.includes(level)) {
+      return level as Notifications.iOSInterruptionLevel;
+    }
     return Notifications.iOSInterruptionLevel.ACTIVE;
   };
 
@@ -36,76 +69,6 @@ export async function extractNotificationOptions(
       interruptionLevel: getInterruptionLevel(request.query.interruption_level),
     },
   };
-
-  logger.debug({ ...response.locals.notificationSettings });
+  logger.debug(response.locals.notificationSettings);
   next();
-}
-
-export async function extractProfile(
-  request: express.Request,
-  response: express.Response,
-  next: express.NextFunction,
-): Promise<void> {
-  // Extract the username part from basic auth and set it as the profile
-  const auth = basicauth(request);
-  response.locals.profile = auth?.name ?? 'default';
-
-  logger.debug({ profile: response.locals.profile });
-  next();
-}
-
-export async function extractDeviceToken(
-  request: express.Request,
-  response: express.Response,
-  next: express.NextFunction,
-): Promise<void> {
-  if (request.params.id) {
-    response.locals.tokens = [request.params.id];
-    logger.debug({ device_id: request.params.id });
-    next();
-  } else {
-    logger.warn('A request with no device ID was attempted. Cancelling request...');
-    response.status(400).json(<Models.Response>{ message: Constants.MESSAGE.NO_ID_SUPPLIED });
-  }
-}
-
-export async function pullUserTokens(
-  request: express.Request<{ id: string }>,
-  response: express.Response,
-  next: express.NextFunction,
-): Promise<void> {
-  const devices: string[] = await Firebase.getUserDevices(request.params.id);
-  const deviceCount: number = devices?.length ?? 0;
-
-  if (deviceCount > 0) {
-    response.locals.tokens = devices;
-    logger.debug({ device_count: deviceCount });
-    next();
-  } else {
-    logger.warn('-> No devices found. Cancelling request...');
-    response.status(400).json(<Models.Response>{ message: Constants.MESSAGE.NO_DEVICES_FOUND });
-  }
-}
-
-export async function checkNotificationPassword(
-  request: express.Request,
-  response: express.Response,
-  next: express.NextFunction,
-): Promise<void> {
-  // TODO
-  next();
-}
-
-export async function validateUser(
-  request: express.Request<{ id: string }>,
-  response: express.Response,
-  next: express.NextFunction,
-): Promise<void> {
-  if (request.params.id && (await Firebase.hasUserID(request.params.id))) {
-    logger.debug({ user_id: request.params.id });
-    next();
-  } else {
-    logger.warn({ user: request.params.id }, 'Failed to find user. Cancelling request...');
-    response.status(404).json(<Models.Response>{ message: Constants.MESSAGE.USER_NOT_FOUND });
-  }
 }

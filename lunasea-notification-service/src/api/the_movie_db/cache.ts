@@ -1,37 +1,26 @@
-import { Redis } from '../../services';
+import { LRUCache } from 'lru-cache';
 import { Constants } from '../../utils';
 
-const _keyBuilderSeries = (seriesId: number): string => {
-  return `${Constants.REDIS.PREFIX.IMAGE_CACHE}:THE_MOVIE_DB:SERIES:${seriesId}`;
-};
-const _keyBuilderMovie = (movieId: number): string => {
-  return `${Constants.REDIS.PREFIX.IMAGE_CACHE}:THE_MOVIE_DB:MOVIES:${movieId}`;
-};
+const imageCache = new LRUCache<string, string>({
+  max: Constants.CACHE.IMAGE_MAX_ENTRIES,
+  ttl: Constants.CACHE.IMAGE_TTL_MS,
+});
 
-export const getMoviePoster = async (movieId: number): Promise<string | undefined> => {
-  const key = _keyBuilderMovie(movieId);
-  const res = await Redis.get(key);
-  if (res) return res;
-  return undefined;
-};
+const movieKey = (movieId: number): string => `tmdb:movie:${movieId}`;
+const seriesKey = (seriesId: number): string => `tmdb:series:${seriesId}`;
+
+export const getMoviePoster = async (movieId: number): Promise<string | undefined> =>
+  imageCache.get(movieKey(movieId));
 
 export const setMoviePoster = async (movieId: number, url: string): Promise<boolean> => {
-  const key = _keyBuilderMovie(movieId);
-  const res = await Redis.set(key, url, Constants.REDIS.EXPIRE.IMAGE_CACHE);
-  if (res) return true;
-  return false;
+  imageCache.set(movieKey(movieId), url);
+  return true;
 };
 
-export const getSeriesPoster = async (seriesId: number): Promise<string | undefined> => {
-  const key = _keyBuilderSeries(seriesId);
-  const res = await Redis.get(key);
-  if (res) return res;
-  return undefined;
-};
+export const getSeriesPoster = async (seriesId: number): Promise<string | undefined> =>
+  imageCache.get(seriesKey(seriesId));
 
 export const setSeriesPoster = async (seriesId: number, url: string): Promise<boolean> => {
-  const key = _keyBuilderSeries(seriesId);
-  const res = await Redis.set(key, url, Constants.REDIS.EXPIRE.IMAGE_CACHE);
-  if (res) return true;
-  return false;
+  imageCache.set(seriesKey(seriesId), url);
+  return true;
 };

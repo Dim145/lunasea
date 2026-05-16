@@ -1,6 +1,6 @@
 import express from 'express';
 import { Middleware, Models as ServerModels } from '../../server';
-import { Firebase } from '../../services';
+import { Ntfy } from '../../services';
 import { Constants, Logger, Notifications } from '../../utils';
 
 export const enable = (api: express.Router) => api.use(route, router);
@@ -9,21 +9,17 @@ const logger = Logger.child({ module: 'custom' });
 const router = express.Router();
 const route = '/custom';
 
-router.post(
-  '/user/:id',
-  Middleware.validateUser,
-  Middleware.checkNotificationPassword,
-  Middleware.pullUserTokens,
-  handler,
-);
-router.post('/device/:id', Middleware.extractDeviceToken, handler);
+router.post('/:topic', Middleware.extractTopic, handler);
 
-async function handler(request: express.Request, response: express.Response): Promise<void> {
+async function handler(
+  request: express.Request<{ topic: string }>,
+  response: express.Response,
+): Promise<void> {
   try {
     response.status(200).json(<ServerModels.Response>{ message: Constants.MESSAGE.OK });
     await _handleWebhook(
       request.body,
-      response.locals.tokens,
+      response.locals.topic,
       response.locals.notificationSettings,
     );
   } catch (error) {
@@ -36,13 +32,13 @@ async function handler(request: express.Request, response: express.Response): Pr
 
 const _handleWebhook = async (
   data: any,
-  devices: string[],
+  topic: string,
   settings: Notifications.Settings,
 ): Promise<void> => {
-  const payload = <Notifications.Payload>{
+  const payload: Notifications.Payload = {
     title: data?.title ?? 'Unknown Title',
     body: data?.body ?? 'Unknown Content',
     image: data?.image,
   };
-  await Firebase.sendNotification(devices, payload, settings);
+  await Ntfy.publish(topic, payload, settings);
 };

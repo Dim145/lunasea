@@ -1,68 +1,115 @@
-# LunaSea Notification Service
+# LunaSea Notification Service (ntfy edition)
 
-A TypeScript backend service that handles receiving webhooks from applications supported in [LunaSea](https://www.lunasea.app/github) and sends notifications to the respective user or device.
+A TypeScript backend that receives webhooks from Sonarr / Radarr / Lidarr /
+Tautulli / Overseerr / custom sources and forwards them as push notifications
+to a self-hosted [ntfy](https://ntfy.sh) server.
 
-> Setting up an instance of your own notification service is **not** necessary to get webhook notifications in LunaSea, simply use the hosted notification service available at [https://notify.lunasea.app](https://notify.lunasea.app). Setting up your own instance _will not_ send notifications to the officially published LunaSea application.
->
-> Setting up your own instance of the notification service is only necessary when building your own version of LunaSea, which utilizes a different Firebase project.
+This is a fork of the original LunaSea notification service that
+**replaces Firebase / FCM with ntfy**, removing the dependency on a
+proprietary cloud and on Redis.
 
-## Usage
+## Architecture
 
-For documentation on setting up the webhooks, please look at LunaSea's documentation [available here](https://notify.lunasea.app).
-
-## Installation (Docker)
-
-```docker
-docker run -d \
-    -e FIREBASE_CLIENT_EMAIL=firebase-adminsdk-example@project.iam.gserviceaccount.com \
-    -e FIREBASE_DATABASE_URL=https://example-project.firebaseio.com \
-    -e FIREBASE_PRIVATE_KEY=example-private-key \
-    -e FIREBASE_PROJECT_ID=example-project \
-    -e FANART_TV_API_KEY=1234567890 \
-    -e THEMOVIEDB_API_KEY=1234567890 \
-    -e REDIS_HOST=192.168.1.100
-    -e REDIS_PORT=6379
-    -p 9000:9000 \
-    --restart unless-stopped \
-ghcr.io/jagandeepbrar/lunasea-notification-service:latest
+```
+Sonarr/Radarr/etc.
+     │ webhook
+     ▼
+[ this service ]  ── POST ──▶  ntfy server  ──▶  subscribed devices
 ```
 
-## Development & Installation
+Each LunaSea (or other ntfy-compatible) client subscribes to a topic.
+Webhooks are routed by topic in the URL:
 
-LunaSea's Notification Service requires:
+```
+POST /v1/sonarr/<topic>        ?profile=foo&sound=true&interruption_level=active
+POST /v1/radarr/<topic>
+POST /v1/lidarr/<topic>
+POST /v1/tautulli/<topic>
+POST /v1/overseerr/<topic>
+POST /v1/custom/<topic>
+```
 
-- Node.js v10.0.0 or higher (v14.0.0 or higher is recommended)
-- Redis 6
-- A Firebase Project
+The topic acts as the destination address — anyone who knows it can publish.
+For defense in depth, you can also require a Bearer token on the ingress
+(see `WEBHOOK_TOKEN` below).
 
-### Environment
+## Configuration
 
-All environment variables must either be set at an operating system-level, terminal-level, as Docker environment variables, or by creating a `.env` file at the root of the project. A sample `.env` is supplied in the project (`.env.sample`).
+All variables can be set via the environment or a `.env` file at the project
+root. A template is provided in `.env.sample`.
 
-| Variable                | Value                                                                 | Default | Required? |
-| :---------------------- | :-------------------------------------------------------------------- | :-----: | :-------: |
-| `FIREBASE_CLIENT_EMAIL` | The Firebase client email for the project.                            | &mdash; |  &check;  |
-| `FIREBASE_DATABASE_URL` | The Firebase database URL for the project.                            | &mdash; |  &check;  |
-| `FIREBASE_PRIVATE_KEY`  | The Firebase private key for the project.                             | &mdash; |  &check;  |
-| `FIREBASE_PROJECT_ID`   | The Firebase project ID for the project.                              | &mdash; |  &check;  |
-| `FANART_TV_API_KEY`     | A developer [Fanart.tv](https://fanart.tv/) API key.                  | &mdash; |  &check;  |
-| `THEMOVIEDB_API_KEY`    | A developer [The Movie Database](https://www.themoviedb.org) API key. | &mdash; |  &check;  |
-| `REDIS_HOST`            | Redis instance hostname.                                              | &mdash; |  &check;  |
-| `REDIS_PORT`            | Redis instance port.                                                  | &mdash; |  &check;  |
-| `REDIS_USER`            | Redis instance username.                                              |  `""`   |  &cross;  |
-| `REDIS_PASS`            | Redis instance password.                                              |  `""`   |  &cross;  |
-| `REDIS_USE_TLS`         | Use a TLS connection when communicating with Redis?                   | `false` |  &cross;  |
-| `PORT`                  | The port to attach the service web server to.                         | `9000`  |  &cross;  |
+| Variable             | Required | Default | Notes                                                                 |
+| -------------------- | :------: | :-----: | --------------------------------------------------------------------- |
+| `NTFY_BASE_URL`      |    ✓     |    —    | Base URL of your ntfy server (e.g. `https://ntfy.example.com`)        |
+| `FANART_TV_API_KEY`  |    ✓     |    —    | Fanart.tv API key for Lidarr artist images                            |
+| `THEMOVIEDB_API_KEY` |    ✓     |    —    | TheMovieDB API key for Sonarr/Radarr posters                          |
+| `NTFY_TOKEN`         |    ·     |   —    | Bearer token if your ntfy server requires auth to publish            |
+| `WEBHOOK_TOKEN`      |    ·     |   —    | When set, incoming webhooks must include `Authorization: Bearer …`   |
+| `PORT`               |    ·     |  9000   | HTTP listen port                                                      |
 
-### Running
+## Docker
 
-2. Configure the required environmental variables
-3. Run `npm install`
-4. Run `npm start`
+```bash
+docker run -d \
+    -e NTFY_BASE_URL=https://ntfy.example.com \
+    -e FANART_TV_API_KEY=… \
+    -e THEMOVIEDB_API_KEY=… \
+    -p 9000:9000 \
+    --restart unless-stopped \
+    lunasea-notification-service:latest
+```
 
-### Building
+### docker-compose with a self-hosted ntfy
 
-2. Configure the required environmental variables
-3. Run `npm install`
-4. Run `npm run build`
-5. Run `npm run serve`
+```yaml
+services:
+  ntfy:
+    image: binwiederhier/ntfy
+    command: serve
+    volumes:
+      - ./ntfy:/etc/ntfy
+      - ./ntfy-cache:/var/cache/ntfy
+    ports: ["80:80"]
+
+  notifications:
+    image: lunasea-notification-service:latest
+    environment:
+      NTFY_BASE_URL: http://ntfy
+      FANART_TV_API_KEY: ${FANART_TV_API_KEY}
+      THEMOVIEDB_API_KEY: ${THEMOVIEDB_API_KEY}
+    ports: ["9000:9000"]
+    depends_on: [ntfy]
+```
+
+## Development
+
+```bash
+npm install
+cp .env.sample .env  # fill it in
+npm start            # starts nodemon on src/index.ts
+```
+
+Build:
+
+```bash
+npm run build        # tsc → dist/
+npm run serve        # runs dist/index.js
+```
+
+Lint:
+
+```bash
+npm run lint
+```
+
+## iOS caveat
+
+ntfy can deliver to the official ntfy Android app out of the box from a
+self-hosted server. The iOS push pipeline goes through Apple's APNs and
+ntfy.sh's Firebase project; pure self-hosting iOS push notifications
+requires either configuring `upstream-base-url` on the ntfy server to relay
+through ntfy.sh, or running your own APNs credentials in the iOS build.
+
+## License
+
+GPL-3.0-only (inherited from upstream).
