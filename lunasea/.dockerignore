@@ -4,7 +4,6 @@ android/
 build/
 ios/
 linux/
-localization/
 macos/
 node_modules/
 shaders/

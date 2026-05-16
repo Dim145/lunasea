@@ -1,21 +1,50 @@
-# Build
-FROM --platform=$BUILDPLATFORM debian:latest as build
+# syntax=docker/dockerfile:1.6
 
-ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:$PATH"
-RUN apt-get update 
-RUN apt-get install -y curl git wget unzip
-RUN apt-get clean
+# ---- Build stage ----
+FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS build
 
-RUN git clone https://github.com/flutter/flutter.git /usr/local/flutter
-RUN flutter channel stable
-RUN flutter upgrade
+ARG FLUTTER_VERSION=3.29.3
+ARG FLAVOR=stable
+ARG BUILD=9999999999
+ARG COMMIT=master
 
-RUN mkdir /lunasea/
-COPY . /lunasea/
-WORKDIR /lunasea/
-RUN flutter build web
+ENV FLUTTER_HOME=/opt/flutter
+ENV PATH="${FLUTTER_HOME}/bin:${FLUTTER_HOME}/bin/cache/dart-sdk/bin:/root/.pub-cache/bin:${PATH}"
+ENV PUB_CACHE=/root/.pub-cache
 
-# Runtime
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates curl git unzip xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 --branch ${FLUTTER_VERSION} https://github.com/flutter/flutter.git ${FLUTTER_HOME} \
+    && git config --global --add safe.directory ${FLUTTER_HOME} \
+    && flutter --version \
+    && flutter config --no-analytics \
+    && flutter precache --web
+
+WORKDIR /lunasea
+
+# Resolve dependencies (cache-friendly: only pubspec changes invalidate this layer)
+COPY pubspec.yaml pubspec.lock ./
+RUN flutter pub get
+
+# Bring in the rest of the sources
+COPY . .
+
+# Run code generators required before `flutter build`
+RUN FLAVOR=${FLAVOR} COMMIT=${COMMIT} BUILD=${BUILD} \
+        dart run environment_config:generate \
+    && dart scripts/generate_localization.dart \
+    && dart run build_runner build --delete-conflicting-outputs
+
+# Build the web release
+RUN flutter build web --release \
+        --dart-define=FLAVOR=${FLAVOR} \
+        --dart-define=COMMIT=${COMMIT} \
+        --dart-define=BUILD=${BUILD}
+
+# ---- Runtime stage ----
 FROM --platform=$TARGETPLATFORM nginx:alpine
 LABEL org.opencontainers.image.source="https://github.com/JagandeepBrar/lunasea"
 COPY --from=build /lunasea/build/web /usr/share/nginx/html
