@@ -15,6 +15,7 @@ import 'package:lunasea/modules/settings/routes/configuration_lidarr/pages/conne
 import 'package:lunasea/modules/settings/routes/configuration_lidarr/pages/default_pages.dart';
 import 'package:lunasea/modules/settings/routes/configuration_lidarr/pages/headers.dart';
 import 'package:lunasea/modules/settings/routes/configuration_lidarr/route.dart';
+import 'package:lunasea/modules/settings/routes/configuration_notifications/route.dart';
 import 'package:lunasea/modules/settings/routes/configuration_nzbget/pages/connection_details.dart';
 import 'package:lunasea/modules/settings/routes/configuration_nzbget/pages/default_pages.dart';
 import 'package:lunasea/modules/settings/routes/configuration_nzbget/pages/headers.dart';
@@ -68,6 +69,7 @@ enum SettingsRoutes with LunaRoutesMixin {
   CONFIGURATION_LIDARR_CONNECTION_DETAILS('connection_details'),
   CONFIGURATION_LIDARR_CONNECTION_DETAILS_HEADERS('headers'),
   CONFIGURATION_LIDARR_DEFAULT_PAGES('default_pages'),
+  CONFIGURATION_NOTIFICATIONS('notifications'),
   CONFIGURATION_NZBGET('nzbget'),
   CONFIGURATION_NZBGET_CONNECTION_DETAILS('connection_details'),
   CONFIGURATION_NZBGET_CONNECTION_DETAILS_HEADERS('headers'),
@@ -149,6 +151,8 @@ enum SettingsRoutes with LunaRoutesMixin {
         );
       case SettingsRoutes.CONFIGURATION_LIDARR_DEFAULT_PAGES:
         return route(widget: const ConfigurationLidarrDefaultPagesRoute());
+      case SettingsRoutes.CONFIGURATION_NOTIFICATIONS:
+        return route(widget: const ConfigurationNotificationsRoute());
       case SettingsRoutes.CONFIGURATION_NZBGET:
         return route(widget: const ConfigurationNZBGetRoute());
       case SettingsRoutes.CONFIGURATION_NZBGET_CONNECTION_DETAILS:
@@ -260,6 +264,7 @@ enum SettingsRoutes with LunaRoutesMixin {
           SettingsRoutes.CONFIGURATION_DRAWER.routes,
           SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES.routes,
           SettingsRoutes.CONFIGURATION_LIDARR.routes,
+          SettingsRoutes.CONFIGURATION_NOTIFICATIONS.routes,
           SettingsRoutes.CONFIGURATION_NZBGET.routes,
           SettingsRoutes.CONFIGURATION_QUICK_ACTIONS.routes,
           SettingsRoutes.CONFIGURATION_RADARR.routes,
