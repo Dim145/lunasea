@@ -33,6 +33,7 @@
 * [SABnzbd](modules/sabnzbd.md)
 * [Sonarr](modules/sonarr.md)
 * [Tautulli](modules/tautulli.md)
+* [Tracearr](modules/tracearr.md)
 * [Wake on LAN](modules/wake-on-lan.md)
 
 ## Releases

@@ -11,6 +11,7 @@ LunaSea is a fully featured, open source self-hosted controller focused on givin
 * [SABnzbd](modules/sabnzbd.md)
 * [Sonarr](modules/sonarr.md)
 * [Tautulli](modules/tautulli.md)
+* [Tracearr](modules/tracearr.md)
 * [Wake on LAN](modules/wake-on-lan.md)
 
 LunaSea even comes with support for webhook-based push notifications, multiple instances of applications using profiles, backup and restore functionality for your configuration, an AMOLED black theme, and more!
