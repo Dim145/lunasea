@@ -15,15 +15,32 @@ interface PublishBody {
   tags?: string[];
 }
 
+type AuthMode = 'none' | 'token' | 'basic';
+
 export const initialize = (): void => {
   const baseURL = Environment.NTFY_BASE_URL.read();
   const token = Environment.NTFY_TOKEN.readOptional();
-  client = axios.create({
+  const username = Environment.NTFY_USERNAME.readOptional();
+  const password = Environment.NTFY_PASSWORD.readOptional();
+
+  let mode: AuthMode = 'none';
+  const config: Parameters<typeof axios.create>[0] = {
     baseURL,
     timeout: 10_000,
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-  });
-  logger.info({ baseURL, authenticated: !!token }, 'ntfy client initialized');
+  };
+
+  if (token) {
+    mode = 'token';
+    config.headers = { Authorization: `Bearer ${token}` };
+  } else if (username && password) {
+    mode = 'basic';
+    config.auth = { username, password };
+  } else if (username || password) {
+    logger.warn('Only one of NTFY_USERNAME / NTFY_PASSWORD is set; basic auth disabled');
+  }
+
+  client = axios.create(config);
+  logger.info({ baseURL, auth: mode }, 'ntfy client initialized');
 };
 
 export const publish = async (

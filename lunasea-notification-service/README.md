@@ -43,9 +43,19 @@ root. A template is provided in `.env.sample`.
 | `NTFY_BASE_URL`      |    ✓     |    —    | Base URL of your ntfy server (e.g. `https://ntfy.example.com`)        |
 | `FANART_TV_API_KEY`  |    ✓     |    —    | Fanart.tv API key for Lidarr artist images                            |
 | `THEMOVIEDB_API_KEY` |    ✓     |    —    | TheMovieDB API key for Sonarr/Radarr posters                          |
-| `NTFY_TOKEN`         |    ·     |   —    | Bearer token if your ntfy server requires auth to publish            |
-| `WEBHOOK_TOKEN`      |    ·     |   —    | When set, incoming webhooks must include `Authorization: Bearer …`   |
+| `NTFY_TOKEN`         |    ·     |   —     | ntfy access token (Bearer). Takes priority over basic auth.          |
+| `NTFY_USERNAME`      |    ·     |   —     | ntfy basic-auth username. Used only when `NTFY_TOKEN` is empty.      |
+| `NTFY_PASSWORD`      |    ·     |   —     | ntfy basic-auth password (used with `NTFY_USERNAME`).                |
+| `WEBHOOK_TOKEN`      |    ·     |   —     | When set, incoming webhooks must include `Authorization: Bearer …`   |
 | `PORT`               |    ·     |  9000   | HTTP listen port                                                      |
+
+### Authenticating against ntfy
+
+`NTFY_TOKEN` and (`NTFY_USERNAME` + `NTFY_PASSWORD`) are mutually
+exclusive: if the token is set it wins. If your ntfy server uses a
+`auth-default-access: deny-all` config, you'll need one of these so
+the service can publish. Subscribers (the official ntfy mobile app)
+authenticate independently using their own copy of the credentials.
 
 ## Docker
 

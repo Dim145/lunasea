@@ -28,7 +28,11 @@ class _Var {
 
 // ntfy
 export const NTFY_BASE_URL = new _Var('NTFY_BASE_URL');
+// Auth for publishing. Prefer NTFY_TOKEN (access token); fall back to
+// NTFY_USERNAME + NTFY_PASSWORD (basic auth) if no token is set.
 export const NTFY_TOKEN = new _Var('NTFY_TOKEN', { redacted: true, optional: true });
+export const NTFY_USERNAME = new _Var('NTFY_USERNAME', { optional: true });
+export const NTFY_PASSWORD = new _Var('NTFY_PASSWORD', { redacted: true, optional: true });
 // Optional ingress auth (defense-in-depth on top of topic-as-secret)
 export const WEBHOOK_TOKEN = new _Var('WEBHOOK_TOKEN', { redacted: true, optional: true });
 // External API keys
