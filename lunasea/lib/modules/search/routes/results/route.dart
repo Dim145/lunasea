@@ -17,8 +17,16 @@ class _State extends State<ResultsRoute> with LunaScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<RefreshIndicatorState> _refreshKey =
       GlobalKey<RefreshIndicatorState>();
-  final PagingController<int, NewznabResultData> _pagingController =
-      PagingController(firstPageKey: 0);
+  late final PagingController<int, NewznabResultData> _pagingController =
+      PagingController<int, NewznabResultData>(
+    getNextPageKey: (state) {
+      if (state.keys == null) return 0;
+      final lastPage = state.pages?.last;
+      if (lastPage == null || lastPage.isEmpty) return null;
+      return state.keys!.last + 1;
+    },
+    fetchPage: (pageKey) => _fetchPage(pageKey),
+  );
 
   @override
   void dispose() {
@@ -26,28 +34,24 @@ class _State extends State<ResultsRoute> with LunaScrollControllerMixin {
     super.dispose();
   }
 
-  Future<void> _fetchPage(int pageKey) async {
-    NewznabCategoryData? category = context.read<SearchState>().activeCategory;
-    NewznabSubcategoryData? subcategory =
-        context.read<SearchState>().activeSubcategory;
-    await context
-        .read<SearchState>()
-        .api
-        .getResults(
-          categoryId: subcategory?.id ?? category?.id,
-          offset: pageKey,
-        )
-        .then((data) {
-      if (data.isEmpty) return _pagingController.appendLastPage([]);
-      return _pagingController.appendPage(data, pageKey + 1);
-    }).catchError((error, stack) {
+  Future<List<NewznabResultData>> _fetchPage(int pageKey) async {
+    try {
+      NewznabCategoryData? category =
+          context.read<SearchState>().activeCategory;
+      NewznabSubcategoryData? subcategory =
+          context.read<SearchState>().activeSubcategory;
+      return await context.read<SearchState>().api.getResults(
+            categoryId: subcategory?.id ?? category?.id,
+            offset: pageKey,
+          );
+    } catch (error, stack) {
       LunaLogger().error(
         'Unable to fetch search results page: $pageKey',
         error,
         stack,
       );
-      _pagingController.error = error;
-    });
+      rethrow;
+    }
   }
 
   @override
@@ -86,7 +90,6 @@ class _State extends State<ResultsRoute> with LunaScrollControllerMixin {
       refreshKey: _refreshKey,
       pagingController: _pagingController,
       scrollController: scrollController,
-      listener: _fetchPage,
       noItemsFoundMessage: 'search.NoResultsFound'.tr(),
       itemBuilder: (context, result, index) => SearchResultTile(data: result),
     );

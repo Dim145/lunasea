@@ -12,6 +12,7 @@ import 'package:lunasea/database/tables/sabnzbd.dart';
 import 'package:lunasea/database/tables/search.dart';
 import 'package:lunasea/database/tables/sonarr.dart';
 import 'package:lunasea/database/tables/tautulli.dart';
+import 'package:lunasea/database/tables/tracearr.dart';
 import 'package:lunasea/vendor.dart';
 
 enum LunaTable<T extends LunaTableMixin> {
@@ -24,7 +25,8 @@ enum LunaTable<T extends LunaTableMixin> {
   sabnzbd<SABnzbdDatabase>('sabnzbd', items: SABnzbdDatabase.values),
   search<SearchDatabase>('search', items: SearchDatabase.values),
   sonarr<SonarrDatabase>('sonarr', items: SonarrDatabase.values),
-  tautulli<TautulliDatabase>('tautulli', items: TautulliDatabase.values);
+  tautulli<TautulliDatabase>('tautulli', items: TautulliDatabase.values),
+  tracearr<TracearrDatabase>('tracearr', items: TracearrDatabase.values);
 
   final String key;
   final List<T> items;

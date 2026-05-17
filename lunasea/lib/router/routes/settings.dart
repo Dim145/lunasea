@@ -15,6 +15,7 @@ import 'package:lunasea/modules/settings/routes/configuration_lidarr/pages/conne
 import 'package:lunasea/modules/settings/routes/configuration_lidarr/pages/default_pages.dart';
 import 'package:lunasea/modules/settings/routes/configuration_lidarr/pages/headers.dart';
 import 'package:lunasea/modules/settings/routes/configuration_lidarr/route.dart';
+import 'package:lunasea/modules/settings/routes/configuration_notifications/route.dart';
 import 'package:lunasea/modules/settings/routes/configuration_nzbget/pages/connection_details.dart';
 import 'package:lunasea/modules/settings/routes/configuration_nzbget/pages/default_pages.dart';
 import 'package:lunasea/modules/settings/routes/configuration_nzbget/pages/headers.dart';
@@ -43,6 +44,7 @@ import 'package:lunasea/modules/settings/routes/configuration_tautulli/pages/con
 import 'package:lunasea/modules/settings/routes/configuration_tautulli/pages/default_pages.dart';
 import 'package:lunasea/modules/settings/routes/configuration_tautulli/pages/headers.dart';
 import 'package:lunasea/modules/settings/routes/configuration_tautulli/route.dart';
+import 'package:lunasea/modules/settings/routes/configuration_tracearr/route.dart';
 import 'package:lunasea/modules/settings/routes/configuration_wake_on_lan/route.dart';
 import 'package:lunasea/modules/settings/routes/profiles/route.dart';
 import 'package:lunasea/modules/settings/routes/settings/route.dart';
@@ -68,6 +70,7 @@ enum SettingsRoutes with LunaRoutesMixin {
   CONFIGURATION_LIDARR_CONNECTION_DETAILS('connection_details'),
   CONFIGURATION_LIDARR_CONNECTION_DETAILS_HEADERS('headers'),
   CONFIGURATION_LIDARR_DEFAULT_PAGES('default_pages'),
+  CONFIGURATION_NOTIFICATIONS('notifications'),
   CONFIGURATION_NZBGET('nzbget'),
   CONFIGURATION_NZBGET_CONNECTION_DETAILS('connection_details'),
   CONFIGURATION_NZBGET_CONNECTION_DETAILS_HEADERS('headers'),
@@ -96,6 +99,7 @@ enum SettingsRoutes with LunaRoutesMixin {
   CONFIGURATION_TAUTULLI_CONNECTION_DETAILS('connection_details'),
   CONFIGURATION_TAUTULLI_CONNECTION_DETAILS_HEADERS('headers'),
   CONFIGURATION_TAUTULLI_DEFAULT_PAGES('default_pages'),
+  CONFIGURATION_TRACEARR('tracearr'),
   CONFIGURATION_WAKE_ON_LAN('wake_on_lan'),
   PROFILES('profiles'),
   SYSTEM('system'),
@@ -149,6 +153,8 @@ enum SettingsRoutes with LunaRoutesMixin {
         );
       case SettingsRoutes.CONFIGURATION_LIDARR_DEFAULT_PAGES:
         return route(widget: const ConfigurationLidarrDefaultPagesRoute());
+      case SettingsRoutes.CONFIGURATION_NOTIFICATIONS:
+        return route(widget: const ConfigurationNotificationsRoute());
       case SettingsRoutes.CONFIGURATION_NZBGET:
         return route(widget: const ConfigurationNZBGetRoute());
       case SettingsRoutes.CONFIGURATION_NZBGET_CONNECTION_DETAILS:
@@ -228,6 +234,8 @@ enum SettingsRoutes with LunaRoutesMixin {
         );
       case SettingsRoutes.CONFIGURATION_TAUTULLI_DEFAULT_PAGES:
         return route(widget: const ConfigurationTautulliDefaultPagesRoute());
+      case SettingsRoutes.CONFIGURATION_TRACEARR:
+        return route(widget: const ConfigurationTracearrRoute());
       case SettingsRoutes.CONFIGURATION_WAKE_ON_LAN:
         return route(widget: const ConfigurationWakeOnLANRoute());
       case SettingsRoutes.PROFILES:
@@ -260,6 +268,7 @@ enum SettingsRoutes with LunaRoutesMixin {
           SettingsRoutes.CONFIGURATION_DRAWER.routes,
           SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES.routes,
           SettingsRoutes.CONFIGURATION_LIDARR.routes,
+          SettingsRoutes.CONFIGURATION_NOTIFICATIONS.routes,
           SettingsRoutes.CONFIGURATION_NZBGET.routes,
           SettingsRoutes.CONFIGURATION_QUICK_ACTIONS.routes,
           SettingsRoutes.CONFIGURATION_RADARR.routes,
@@ -267,6 +276,7 @@ enum SettingsRoutes with LunaRoutesMixin {
           SettingsRoutes.CONFIGURATION_SEARCH.routes,
           SettingsRoutes.CONFIGURATION_SONARR.routes,
           SettingsRoutes.CONFIGURATION_TAUTULLI.routes,
+          SettingsRoutes.CONFIGURATION_TRACEARR.routes,
           SettingsRoutes.CONFIGURATION_WAKE_ON_LAN.routes,
         ];
       case SettingsRoutes.CONFIGURATION_DASHBOARD:

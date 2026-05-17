@@ -1,7 +1,7 @@
 import express from 'express';
 import { Models, Payloads } from './';
 import { Middleware, Models as ServerModels } from '../../server';
-import { Firebase } from '../../services';
+import { Ntfy } from '../../services';
 import { Constants, Logger, Notifications } from '../../utils';
 
 export const enable = (api: express.Router) => api.use(route, router);
@@ -10,21 +10,17 @@ const logger = Logger.child({ module: 'lidarr' });
 const router = express.Router();
 const route = '/lidarr';
 
-router.post(
-  '/user/:id',
-  Middleware.validateUser,
-  Middleware.checkNotificationPassword,
-  Middleware.pullUserTokens,
-  handler,
-);
-router.post('/device/:id', Middleware.extractDeviceToken, handler);
+router.post('/:topic', Middleware.extractTopic, handler);
 
-async function handler(request: express.Request, response: express.Response): Promise<void> {
+async function handler(
+  request: express.Request<{ topic: string }>,
+  response: express.Response,
+): Promise<void> {
   try {
     response.status(200).json(<ServerModels.Response>{ message: Constants.MESSAGE.OK });
     await _handleWebhook(
       request.body,
-      response.locals.tokens,
+      response.locals.topic,
       response.locals.profile,
       response.locals.notificationSettings,
     );
@@ -38,7 +34,7 @@ async function handler(request: express.Request, response: express.Response): Pr
 
 const _handleWebhook = async (
   data: any,
-  devices: string[],
+  topic: string,
   profile: string,
   settings: Notifications.Settings,
 ): Promise<void> => {
@@ -65,5 +61,5 @@ const _handleWebhook = async (
         break;
     }
   }
-  if (payload) await Firebase.sendNotification(devices, payload, settings);
+  if (payload) await Ntfy.publish(topic, payload, settings);
 };

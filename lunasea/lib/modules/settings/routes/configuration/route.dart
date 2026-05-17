@@ -90,6 +90,14 @@ class _State extends State<ConfigurationRoute> with LunaScrollControllerMixin {
             trailing: const LunaIconButton(icon: Icons.rounded_corner_rounded),
             onTap: SettingsRoutes.CONFIGURATION_QUICK_ACTIONS.go,
           ),
+        LunaBlock(
+          title: 'Notifications',
+          body: [
+            TextSpan(text: 'Configure webhook destination and topic'),
+          ],
+          trailing: const LunaIconButton(icon: Icons.notifications_rounded),
+          onTap: SettingsRoutes.CONFIGURATION_NOTIFICATIONS.go,
+        ),
         LunaDivider(),
         ..._moduleList(),
       ],

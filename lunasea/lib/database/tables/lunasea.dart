@@ -29,6 +29,9 @@ enum LunaSeaDatabase<T> with LunaTableMixin<T> {
   QUICK_ACTIONS_SEARCH<bool>(false),
   USE_24_HOUR_TIME<bool>(false),
   ENABLE_IN_APP_NOTIFICATIONS<bool>(true),
+  NOTIFICATIONS_SERVICE_URL<String>(''),
+  NOTIFICATIONS_TOPIC<String>(''),
+  NOTIFICATIONS_TOKEN<String>(''),
   CHANGELOG_LAST_BUILD_VERSION<int>(0);
 
   @override

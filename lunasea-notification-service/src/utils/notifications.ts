@@ -1,5 +1,3 @@
-import { MulticastMessage } from 'firebase-admin/messaging';
-
 export interface Payload {
   title: string;
   body: string;
@@ -22,45 +20,40 @@ export enum iOSInterruptionLevel {
   TIME_SENSITIVE = 'time-sensitive',
 }
 
-export const buildMulticastMessage = (
-  tokens: string[],
-  payload: Payload,
-  settings: Settings,
-): MulticastMessage => {
-  const data: { [key: string]: string } = {};
-  for (const key of Object.keys(payload.data ?? {})) {
-    data[key] = String((payload.data ?? {})[key]);
+// ntfy uses integer priorities 1..5; map LunaSea's iOS interruption levels
+// onto that range. `sound=false` forces minimum priority (no sound, no vibration).
+export const toNtfyPriority = (settings: Settings): number => {
+  if (!settings.sound) return 1; // min
+  switch (settings.ios.interruptionLevel) {
+    case iOSInterruptionLevel.PASSIVE:
+      return 2; // low
+    case iOSInterruptionLevel.TIME_SENSITIVE:
+      return 4; // high
+    case iOSInterruptionLevel.ACTIVE:
+    default:
+      return 3; // default
   }
-
-  return <MulticastMessage>{
-    tokens: tokens,
-    notification: {
-      title: payload.title,
-      body: payload.body,
-      imageUrl: payload.image,
-    },
-    data,
-    android: {
-      notification: {
-        sound: settings.sound ? 'default' : undefined,
-      },
-      priority: 'high',
-      ttl: 2419200,
-    },
-    apns: {
-      payload: {
-        aps: {
-          mutableContent: payload.image !== undefined,
-          sound: settings.sound ? 'default' : undefined,
-          contentAvailable: true,
-          'interruption-level': settings.ios.interruptionLevel,
-        },
-      },
-    },
-  };
 };
 
 export const generateTitle = (module: string, profile: string, body: string): string => {
   if (profile && profile !== 'default') return `${module} (${profile}): ${body}`;
   return `${module}: ${body}`;
+};
+
+/**
+ * Build a deeplink for the LunaSea app to handle when a notification is tapped.
+ * Returns a URL on the `lunasea://` custom scheme; the app needs to register
+ * it as an intent/universal link to act on this. Returns undefined when the
+ * payload has no actionable data.
+ */
+export const buildClickUrl = (payload: Payload): string | undefined => {
+  const data = payload.data;
+  if (!data || !data.module) return undefined;
+  const query = new URLSearchParams();
+  for (const key of Object.keys(data)) {
+    if (key === 'module') continue;
+    query.set(key, data[key]);
+  }
+  const qs = query.toString();
+  return qs ? `lunasea://${data.module}?${qs}` : `lunasea://${data.module}`;
 };

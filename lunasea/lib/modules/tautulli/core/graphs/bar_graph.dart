@@ -46,7 +46,7 @@ class TautulliBarGraphHelper {
         touchTooltipData: BarTouchTooltipData(
           getTooltipColor: (_) =>
               LunaTheme.isAMOLEDTheme ? Colors.black : LunaColours.primary,
-          tooltipRoundedRadius: LunaUI.BORDER_RADIUS,
+          tooltipBorderRadius: BorderRadius.circular(LunaUI.BORDER_RADIUS),
           tooltipPadding: const EdgeInsets.all(8.0),
           maxContentWidth: MediaQuery.of(context).size.width / 1.25,
           fitInsideVertically: true,

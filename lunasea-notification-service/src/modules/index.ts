@@ -9,10 +9,10 @@ import { Controller as Tautulli } from './tautulli';
 
 export const router = express.Router();
 
-// Shared Middleware
+// Shared Middleware (applied in order)
 router.use(Middleware.startNewRequest);
+router.use(Middleware.checkWebhookAuth);
 router.use(Middleware.extractNotificationOptions);
-router.use(Middleware.extractProfile);
 
 // Modules
 Custom.enable(router);

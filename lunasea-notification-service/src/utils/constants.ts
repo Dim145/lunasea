@@ -1,35 +1,14 @@
-export enum RedisExpirationMode {
-  SECONDS = 'EX',
-}
-
-export interface RedisExpirationConfig {
-  mode: RedisExpirationMode;
-  ttl: number;
-}
-
 export const MESSAGE = {
   INTERNAL_SERVER_ERROR: 'Internal Server Error',
-  NO_ID_SUPPLIED: 'No ID Supplied',
-  NO_DEVICES_FOUND: 'No Devices Found',
+  NO_TOPIC_SUPPLIED: 'No topic supplied',
+  UNAUTHORIZED: 'Unauthorized',
   OK: 'OK',
-  USER_NOT_FOUND: 'Invalid User ID',
 };
 
-export const REDIS = {
-  EXPIRE: {
-    DEVICES: <RedisExpirationConfig>{
-      mode: RedisExpirationMode.SECONDS,
-      ttl: 30,
-    },
-    IMAGE_CACHE: <RedisExpirationConfig>{
-      mode: RedisExpirationMode.SECONDS,
-      ttl: 60 * 60 * 24 * 7, // 7 Days
-    },
-  },
-  PREFIX: {
-    DEVICES: 'DEVICES',
-    IMAGE_CACHE: 'IMAGE_CACHE',
-  },
+export const CACHE = {
+  // 7 days for image lookups; topics for tmdb/fanart don't change
+  IMAGE_TTL_MS: 7 * 24 * 60 * 60 * 1000,
+  IMAGE_MAX_ENTRIES: 5000,
 };
 
 export const THE_MOVIE_DB = {

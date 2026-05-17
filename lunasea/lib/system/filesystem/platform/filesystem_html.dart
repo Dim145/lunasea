@@ -35,7 +35,7 @@ class _Web implements LunaFileSystem {
   @override
   Future<LunaFile?> read(BuildContext context, List<String> extensions) async {
     try {
-      final result = await FilePicker.platform.pickFiles(withData: true);
+      final result = await FilePicker.pickFiles(withData: true);
 
       if (result?.files.isNotEmpty ?? false) {
         String? _ext = result!.files[0].extension;

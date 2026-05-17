@@ -5,6 +5,7 @@ import 'package:lunasea/modules/radarr.dart';
 import 'package:lunasea/modules/sonarr.dart';
 import 'package:lunasea/modules/settings.dart';
 import 'package:lunasea/modules/tautulli.dart';
+import 'package:lunasea/modules/tracearr.dart';
 
 class SettingsHeaderRoute extends StatefulWidget {
   final LunaModule module;
@@ -119,6 +120,8 @@ class _State extends State<SettingsHeaderRoute> with LunaScrollControllerMixin {
         throw Exception('Overseerr does not have a headers page');
       case LunaModule.TAUTULLI:
         return LunaProfile.current.tautulliHeaders;
+      case LunaModule.TRACEARR:
+        return LunaProfile.current.tracearrHeaders;
     }
   }
 
@@ -146,6 +149,8 @@ class _State extends State<SettingsHeaderRoute> with LunaScrollControllerMixin {
         throw Exception('Wake on LAN does not have a global state');
       case LunaModule.TAUTULLI:
         return context.read<TautulliState>().reset();
+      case LunaModule.TRACEARR:
+        return context.read<TracearrState>().reset();
       case LunaModule.OVERSEERR:
         return;
     }

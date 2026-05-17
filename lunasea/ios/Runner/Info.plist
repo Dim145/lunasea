@@ -25,8 +25,12 @@
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>app.lunasea.lunasea</string>
 			<key>CFBundleURLSchemes</key>
-			<array/>
+			<array>
+				<string>lunasea</string>
+			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
