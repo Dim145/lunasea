@@ -1,0 +1,20 @@
+{
+  "tracearr.Streams": "Streams",
+  "tracearr.ActiveStreams": "Active Streams",
+  "tracearr.ActiveStreamsDescription": "View currently active playback sessions",
+  "tracearr.History": "History",
+  "tracearr.HistoryDescription": "Browse session history",
+  "tracearr.Users": "Users",
+  "tracearr.UsersDescription": "User list and activity summary",
+  "tracearr.Violations": "Violations",
+  "tracearr.ViolationsDescription": "Account sharing detections",
+  "tracearr.TerminateStream": "Terminate Stream",
+  "tracearr.TerminateStreamConfirmation": "Are you sure you want to terminate this stream?",
+  "tracearr.NoActiveStreams": "No Active Streams",
+  "tracearr.NoHistoryFound": "No History Found",
+  "tracearr.NoUsersFound": "No Users Found",
+  "tracearr.NoViolationsFound": "No Violations Found",
+  "tracearr.Server": "Server",
+  "tracearr.Online": "Online",
+  "tracearr.Offline": "Offline"
+}

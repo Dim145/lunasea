@@ -149,6 +149,22 @@ class LunaProfile extends HiveObject {
   @HiveField(43, defaultValue: <String, String>{})
   Map<String, String> overseerrHeaders;
 
+  @JsonKey()
+  @HiveField(44, defaultValue: false)
+  bool tracearrEnabled;
+
+  @JsonKey()
+  @HiveField(45, defaultValue: '')
+  String tracearrHost;
+
+  @JsonKey()
+  @HiveField(46, defaultValue: '')
+  String tracearrKey;
+
+  @JsonKey()
+  @HiveField(47, defaultValue: <String, String>{})
+  Map<String, String> tracearrHeaders;
+
   LunaProfile._internal({
     //Lidarr
     required this.lidarrEnabled,
@@ -190,6 +206,11 @@ class LunaProfile extends HiveObject {
     required this.overseerrHost,
     required this.overseerrKey,
     required this.overseerrHeaders,
+    //Tracearr
+    required this.tracearrEnabled,
+    required this.tracearrHost,
+    required this.tracearrKey,
+    required this.tracearrHeaders,
   });
 
   factory LunaProfile({
@@ -233,6 +254,11 @@ class LunaProfile extends HiveObject {
     String? overseerrHost,
     String? overseerrKey,
     Map<String, String>? overseerrHeaders,
+    //Tracearr
+    bool? tracearrEnabled,
+    String? tracearrHost,
+    String? tracearrKey,
+    Map<String, String>? tracearrHeaders,
   }) {
     return LunaProfile._internal(
       // Lidarr
@@ -275,6 +301,11 @@ class LunaProfile extends HiveObject {
       overseerrHost: overseerrHost ?? '',
       overseerrKey: overseerrKey ?? '',
       overseerrHeaders: overseerrHeaders ?? {},
+      // Tracearr
+      tracearrEnabled: tracearrEnabled ?? false,
+      tracearrHost: tracearrHost ?? '',
+      tracearrKey: tracearrKey ?? '',
+      tracearrHeaders: tracearrHeaders ?? {},
     );
   }
 

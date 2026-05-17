@@ -44,6 +44,7 @@ import 'package:lunasea/modules/settings/routes/configuration_tautulli/pages/con
 import 'package:lunasea/modules/settings/routes/configuration_tautulli/pages/default_pages.dart';
 import 'package:lunasea/modules/settings/routes/configuration_tautulli/pages/headers.dart';
 import 'package:lunasea/modules/settings/routes/configuration_tautulli/route.dart';
+import 'package:lunasea/modules/settings/routes/configuration_tracearr/route.dart';
 import 'package:lunasea/modules/settings/routes/configuration_wake_on_lan/route.dart';
 import 'package:lunasea/modules/settings/routes/profiles/route.dart';
 import 'package:lunasea/modules/settings/routes/settings/route.dart';
@@ -98,6 +99,7 @@ enum SettingsRoutes with LunaRoutesMixin {
   CONFIGURATION_TAUTULLI_CONNECTION_DETAILS('connection_details'),
   CONFIGURATION_TAUTULLI_CONNECTION_DETAILS_HEADERS('headers'),
   CONFIGURATION_TAUTULLI_DEFAULT_PAGES('default_pages'),
+  CONFIGURATION_TRACEARR('tracearr'),
   CONFIGURATION_WAKE_ON_LAN('wake_on_lan'),
   PROFILES('profiles'),
   SYSTEM('system'),
@@ -232,6 +234,8 @@ enum SettingsRoutes with LunaRoutesMixin {
         );
       case SettingsRoutes.CONFIGURATION_TAUTULLI_DEFAULT_PAGES:
         return route(widget: const ConfigurationTautulliDefaultPagesRoute());
+      case SettingsRoutes.CONFIGURATION_TRACEARR:
+        return route(widget: const ConfigurationTracearrRoute());
       case SettingsRoutes.CONFIGURATION_WAKE_ON_LAN:
         return route(widget: const ConfigurationWakeOnLANRoute());
       case SettingsRoutes.PROFILES:
@@ -272,6 +276,7 @@ enum SettingsRoutes with LunaRoutesMixin {
           SettingsRoutes.CONFIGURATION_SEARCH.routes,
           SettingsRoutes.CONFIGURATION_SONARR.routes,
           SettingsRoutes.CONFIGURATION_TAUTULLI.routes,
+          SettingsRoutes.CONFIGURATION_TRACEARR.routes,
           SettingsRoutes.CONFIGURATION_WAKE_ON_LAN.routes,
         ];
       case SettingsRoutes.CONFIGURATION_DASHBOARD:
