@@ -10,7 +10,7 @@
 | [`lunasea/`](lunasea/) | The Flutter app (Android / iOS / macOS / Linux / Windows / Web). |
 | [`lunasea-notification-service/`](lunasea-notification-service/) | The Node.js backend that receives webhooks from the *arr stack and forwards them as push notifications. |
 | [`lunasea-cloud-functions/`](lunasea-cloud-functions/) | Firebase functions used by the original hosted setup (kept for reference). |
-| [`lunasea-docs/`](lunasea-docs/) | User-facing GitBook documentation. |
+| [`lunasea-docs/`](docs/) | User-facing GitBook documentation. |
 
 ## Releases
 
