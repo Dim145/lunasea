@@ -1,5 +1,10 @@
+---
+title: Wake on LAN
+parent: Modules
+nav_order: 10
+---
+
 # Wake on LAN
 
-{% hint style="info" %}
-Coming Soon!
-{% endhint %}
+> Coming Soon!
+{: .note }

@@ -45,6 +45,13 @@ RUN flutter build web --release \
         --dart-define=BUILD=${BUILD}
 
 # ---- Runtime stage ----
-FROM --platform=$TARGETPLATFORM nginx:stable-alpine
+# nginx-unprivileged runs as the `nginx` user (UID 101), listens on port 8080
+# by default, and has no setuid binaries. No `USER root` step is ever needed
+# in this image.
+FROM --platform=$TARGETPLATFORM nginxinc/nginx-unprivileged:stable-alpine
 LABEL org.opencontainers.image.source="https://github.com/JagandeepBrar/lunasea"
-COPY --from=build /lunasea/build/web /usr/share/nginx/html
+LABEL org.opencontainers.image.title="lunasea-web"
+COPY --from=build --chown=nginx:nginx /lunasea/build/web /usr/share/nginx/html
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget -qO- --spider http://127.0.0.1:8080/ || exit 1

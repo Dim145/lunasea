@@ -1,5 +1,10 @@
+---
+title: NZBGet
+parent: Modules
+nav_order: 5
+---
+
 # NZBGet
 
-{% hint style="info" %}
-Coming Soon!
-{% endhint %}
+> Coming Soon!
+{: .note }

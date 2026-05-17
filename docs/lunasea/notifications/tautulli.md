@@ -1,3 +1,10 @@
+---
+title: Tautulli
+parent: Notifications
+grand_parent: LunaSea
+nav_order: 5
+---
+
 # Tautulli
 
 ## Preparation
@@ -9,8 +16,8 @@
 
 In Tautulli's web GUI, head to Settings -> Notification Agents, hit the "Add a new notification agent" button and select "LunaSea". Please follow each section below to setup the webhook:
 
-{% tabs %}
-{% tab title="Configuration" %}
+**Configuration**
+
 **LunaSea Webhook URL**
 
 Paste the full device-based or user-based URL that was copied from LunaSea.
@@ -19,14 +26,13 @@ Paste the full device-based or user-based URL that was copied from LunaSea.
 
 Enter in the name of the profile which should be an **exact match** to the profile that this module instance was added to within LunaSea. Capitalization and punctuation _does_ matter.
 
-{% hint style="warning" %}
-This step is only required if you are _**not**_ using the default LunaSea profile (`default`). LunaSea will assume the default profile when none is supplied.
+> This step is only required if you are _**not**_ using the default LunaSea profile (`default`). LunaSea will assume the default profile when none is supplied.
+>
+> Correctly setting up this field is critically important to get full deep-linking support.
+{: .warning }
 
-Correctly setting up this field is critically important to get full deep-linking support.
-{% endhint %}
-{% endtab %}
+**Triggers**
 
-{% tab title="Triggers" %}
 Select which events should trigger a push notification. The following triggers are supported:
 
 |            Trigger           | Supported? |
@@ -49,20 +55,18 @@ Select which events should trigger a push notification. The following triggers a
 |     Plex Update Available    |      ✅     |
 |   Tautulli Update Available  |      ✅     |
 | Tautulli Database Corruption |      ✅     |
-{% endtab %}
 
-{% tab title="Conditions" %}
+**Conditions**
+
 You can _**optionally**_ add conditions that must be met for the webhook notifications to trigger.
 
 You can set as many conditions as you like, and can combine different conditions for different triggers by adding separate webhooks to Tautulli.
-{% endtab %}
 
-{% tab title="Text" %}
+**Text**
+
 A default message is set for all trigger types, but on this page you can alter the exact text that would appear in the message.
 
 Please read the top of this tab in Tautulli about how to utilize the different modifiers.
-{% endtab %}
-{% endtabs %}
 
 Once setup, close LunaSea and run the webhook test in Tautulli. You should receive a new notification letting you know that LunaSea is ready to receive Tautulli notifications!
 
@@ -76,6 +80,5 @@ This step is **optional** but recommended. Unlike other modules, in order to rec
 4. Follow the [3rd Party APIs Guide](https://github.com/Tautulli/Tautulli/wiki/3rd-Party-APIs-Guide) to acquire the required details for the chosen image provider
 5. Enter and save the acquired API/Client ID information
 
-{% hint style="info" %}
-_If selecting `Self-hosted on public domain` as the image provider, ensure that the image path (_`/tautulli/image`) is publicly accessible from the internet
-{% endhint %}
+> _If selecting `Self-hosted on public domain` as the image provider, ensure that the image path (_`/tautulli/image`) is publicly accessible from the internet
+{: .note }

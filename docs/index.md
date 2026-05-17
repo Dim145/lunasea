@@ -1,3 +1,9 @@
+---
+title: Home
+layout: home
+nav_order: 1
+---
+
 # LunaSea
 
 LunaSea is a fully featured, open source self-hosted controller focused on giving you a seamless experience between all of your self-hosted media software remotely on your devices.
@@ -16,9 +22,8 @@ LunaSea is a fully featured, open source self-hosted controller focused on givin
 
 LunaSea even comes with support for webhook-based push notifications, multiple instances of applications using profiles, backup and restore functionality for your configuration, an AMOLED black theme, and more!
 
-{% hint style="info" %}
-LunaSea is purely a remote control application, it does not offer any functionality without software installed on a server/computer.
-{% endhint %}
+> LunaSea is purely a remote control application, it does not offer any functionality without software installed on a server/computer.
+{: .note }
 
 ## Releases
 

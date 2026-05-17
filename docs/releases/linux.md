@@ -1,10 +1,15 @@
+---
+title: Linux
+parent: Releases
+nav_order: 4
+---
+
 # Linux
 
 LunaSea is available on all graphical Linux distributions that have `snap` installed and configured or are capable of installing a Debian distribution (`.deb`).
 
-{% hint style="info" %}
-If you want a stable experience, stick with stable releases. Want to test new builds of LunaSea? Read about the [build channels](../getting-started/build-channels.md) to make the right choice!
-{% endhint %}
+> If you want a stable experience, stick with stable releases. Want to test new builds of LunaSea? Read about the [build channels](../getting-started/build-channels.md) to make the right choice!
+{: .note }
 
 ## Snapcraft
 
@@ -12,25 +17,23 @@ _Channel(s): `Stable`, `Beta`, `Edge`_
 
 The easiest way for most users on graphic Linux distributions would be to download releases of LunaSea directly from [Snapcraft](https://www.lunasea.app/snapcraft)!
 
-{% tabs %}
-{% tab title="Stable" %}
+**Stable**
+
 ```
 sudo snap install lunasea
 ```
-{% endtab %}
 
-{% tab title="Beta" %}
+**Beta**
+
 ```
 sudo snap install lunasea --beta
 ```
-{% endtab %}
 
-{% tab title="Edge" %}
+**Edge**
+
 ```
 sudo snap install lunasea --edge
 ```
-{% endtab %}
-{% endtabs %}
 
 ## Build Bucket
 

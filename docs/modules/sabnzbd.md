@@ -1,5 +1,10 @@
+---
+title: SABnzbd
+parent: Modules
+nav_order: 4
+---
+
 # SABnzbd
 
-{% hint style="info" %}
-Coming Soon!
-{% endhint %}
+> Coming Soon!
+{: .note }

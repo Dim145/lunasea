@@ -1,0 +1,8 @@
+_site/
+.jekyll-cache/
+.bundle/
+vendor/
+.DS_Store
+.git/
+*.log
+Gemfile.lock

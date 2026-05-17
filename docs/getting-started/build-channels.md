@@ -1,3 +1,9 @@
+---
+title: Build Channels
+parent: Getting Started
+nav_order: 1
+---
+
 # Build Channels
 
 LunaSea offers four different build channels, each of which supply signed and notarized copies of LunaSea.
@@ -18,7 +24,6 @@ This channel's purpose is to _ensure that every commit made to master is buildin
 
 There are no restrictions on features in these builds (barring a very specific subset used for debugging/testing) so it gives full access to everything that is work in progress.
 
-{% hint style="warning" %}
-**Do not expect a fully stable experience if you use these builds**, as it is entirely possible that a single build could cause problems including but not limited to database corruption. If you are running these builds, please ensure you have either a cloud or offline backup available for easy restoration.
-{% endhint %}
+> **Do not expect a fully stable experience if you use these builds**, as it is entirely possible that a single build could cause problems including but not limited to database corruption. If you are running these builds, please ensure you have either a cloud or offline backup available for easy restoration.
+{: .warning }
 

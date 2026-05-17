@@ -1,5 +1,10 @@
+---
+title: Overseerr
+parent: Modules
+nav_order: 7
+---
+
 # Overseerr
 
-{% hint style="info" %}
-Coming Soon!
-{% endhint %}
+> Coming Soon!
+{: .note }

@@ -1,3 +1,10 @@
+---
+title: Overseerr
+parent: Notifications
+grand_parent: LunaSea
+nav_order: 4
+---
+
 # Overseerr
 
 ## Preparation
@@ -9,24 +16,23 @@
 
 In Overseerr's web GUI, head to Settings -> Notifications -> LunaSea. Ensure that the agent is enabled, then follow each section below to setup the webhook:
 
-{% tabs %}
-{% tab title="Webhook URL" %}
+**Webhook URL**
+
 Paste the full device-based or user-based URL that was copied from LunaSea.
 
 Overseerr currently only supports 1 LunaSea notification agent, which means you can only setup a single user-based or device-based notification.
-{% endtab %}
 
-{% tab title="Profile Name" %}
+**Profile Name**
+
 The profile name field should be an **exact match** to the profile that this module instance was added to within LunaSea. Capitalization and punctuation _does_ matter.
 
-{% hint style="warning" %}
-This step is only required if you are _**not**_ using the default LunaSea profile (`default`). LunaSea will assume the default profile when none is supplied.
+> This step is only required if you are _**not**_ using the default LunaSea profile (`default`). LunaSea will assume the default profile when none is supplied.
+>
+> Correctly setting up this field is critically important to get full deep-linking support.
+{: .warning }
 
-Correctly setting up this field is critically important to get full deep-linking support.
-{% endhint %}
-{% endtab %}
+**Notification Types**
 
-{% tab title="Notification Types" %}
 Select which events should trigger a push notification. The following triggers are supported:
 
 |             Trigger            | Supported? |
@@ -41,8 +47,6 @@ Select which events should trigger a push notification. The following triggers a
 |          Issue Comment         |      ✅     |
 |         Issue Resolved         |      ✅     |
 |         Issue Reopened         |      ✅     |
-{% endtab %}
-{% endtabs %}
 
 Once setup, close LunaSea and run the webhook test in Overseerr. You should receive a new notification letting you know that LunaSea is ready to receive Overseerr notifications!
 

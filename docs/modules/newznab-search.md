@@ -1,10 +1,15 @@
+---
+title: Newznab Search
+parent: Modules
+nav_order: 6
+---
+
 # Newznab Search
 
 LunaSea supports any indexer that supports the [Newznab API specification](https://newznab.readthedocs.io/en/latest/). Most modern indexers (including NZBHydra2) are fully compliant with this specification, and compatible with LunaSea.
 
-{% hint style="warning" %}
-LunaSea supports infinite scrolling of search and category results, which can result in multiple API hits. It is only recommended to add indexers with high API limits to prevent quickly reaching your API limit.
-{% endhint %}
+> LunaSea supports infinite scrolling of search and category results, which can result in multiple API hits. It is only recommended to add indexers with high API limits to prevent quickly reaching your API limit.
+{: .warning }
 
 ## Adding an Indexer
 
@@ -18,9 +23,8 @@ This is the **API host** from the indexer. Do not confused this with the homepag
 
 If your indexer can and has been added to Lidarr, Radarr, or Sonarr, you can simply copy the URL from the indexer configuration page within their settings.
 
-{% hint style="info" %}
-A list of popular indexers and their API hosts is available at the end of this page.
-{% endhint %}
+> A list of popular indexers and their API hosts is available at the end of this page.
+{: .note }
 
 ### Indexer API Key
 
@@ -48,8 +52,7 @@ Custom headers allows users to attach custom request headers to each API call th
 |   **SimplyNZBs**   |         [https://simplynzbs.com](https://simplynzbs.com)         |
 | **Usenet Crawler** | [https://www.usenet-crawler.com](https://www.usenet-crawler.com) |
 
-{% hint style="info" %}
-_**Want to add additional indexers?**_
-
-Contact me through GitHub, Discord, or Reddit!
-{% endhint %}
+> _**Want to add additional indexers?**_
+>
+> Contact me through GitHub, Discord, or Reddit!
+{: .note }

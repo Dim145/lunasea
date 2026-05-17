@@ -1,10 +1,15 @@
+---
+title: Platform Restrictions
+parent: Getting Started
+nav_order: 2
+---
+
 # Platform Restrictions
 
 Below showcases which modules or features may not be supported on each platform.
 
-{% hint style="info" %}
-Work will continuously be done to try to achieve 100% feature parity between all platforms when possible!
-{% endhint %}
+> Work will continuously be done to try to achieve 100% feature parity between all platforms when possible!
+{: .note }
 
 ## Module Support
 
@@ -90,9 +95,8 @@ LunaSea's web instances are hosted on [Netlify](https://www.netlify.com/) and us
 
 One limitation this incurs is that most modern web browsers no longer support [mixed content](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed\_content), so it is required when using these browsers to utilize a reverse proxy (or something similar) to expose a secure (`HTTPS`) connection to your instances even when hosted on the same machine.
 
-{% hint style="warning" %}
-**All network communication occurs directly between your web browser and host machine**, but this is a limitation put forward by the web browsers.
-{% endhint %}
+> **All network communication occurs directly between your web browser and host machine**, but this is a limitation put forward by the web browsers.
+{: .warning }
 
 ### Wake on LAN Support
 

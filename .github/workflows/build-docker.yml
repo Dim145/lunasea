@@ -15,6 +15,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      # Required for uploading SARIF (Trivy scan results) to the Security tab.
+      security-events: write
     strategy:
       fail-fast: false
       matrix:
@@ -23,6 +25,8 @@ jobs:
             context: lunasea
           - name: lunasea-notification-service
             context: lunasea-notification-service
+          - name: lunasea-docs
+            context: docs
 
     steps:
       - name: Checkout
@@ -67,7 +71,53 @@ jobs:
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.version=${{ github.event.release.tag_name }}
 
-      - name: Build & push
+      # Build once for the local Docker daemon so we can scan before push.
+      # The multi-arch push happens in a separate step that reuses the
+      # buildx cache (so this is not a double build).
+      - name: Build (load for scanning)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.image.context }}
+          load: true
+          tags: ${{ steps.ref.outputs.image }}:scan
+          cache-from: type=gha,scope=${{ matrix.image.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image.name }}
+
+      - name: Trivy vulnerability scan
+        id: trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.ref.outputs.image }}:scan
+          format: sarif
+          output: trivy-${{ matrix.image.name }}.sarif
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+          # Do not fail the build on findings — surface them in the Security
+          # tab instead. Flip `exit-code: '1'` here once the baseline is clean.
+          exit-code: '0'
+
+      - name: Upload Trivy SARIF to Security tab
+        if: always() && steps.trivy.outcome != 'skipped'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ matrix.image.name }}.sarif
+          category: trivy-${{ matrix.image.name }}
+
+      - name: Generate SBOM (SPDX)
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ steps.ref.outputs.image }}:scan
+          format: spdx-json
+          output-file: sbom-${{ matrix.image.name }}.spdx.json
+
+      - name: Attach SBOM to the workflow run
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.image.name }}
+          path: sbom-${{ matrix.image.name }}.spdx.json
+          retention-days: 90
+
+      - name: Build & push (multi-arch)
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.image.context }}

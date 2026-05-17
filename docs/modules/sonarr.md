@@ -1,10 +1,15 @@
+---
+title: Sonarr
+parent: Modules
+nav_order: 3
+---
+
 # Sonarr
 
 Adding your Sonarr instance to LunaSea only requires a few steps to get going!
 
-{% hint style="warning" %}
-This documentation only covers adding Sonarr to LunaSea via local network (LAN) connections, and does not cover exposing Sonarr externally and connecting remotely.
-{% endhint %}
+> This documentation only covers adding Sonarr to LunaSea via local network (LAN) connections, and does not cover exposing Sonarr externally and connecting remotely.
+{: .warning }
 
 ## Preparing Sonarr
 
@@ -18,9 +23,8 @@ Finding your local network IP address of the machine running Sonarr is the first
 
 If you are running a different operating system, you can use any search engine to look up "Find local IP address on \<your operating system>" to typically find tons of guides for any platform.
 
-{% hint style="info" %}
-It is recommended to set your host machine's IP address to be statically assigned instead of dynamic/DHCP. This ensures that the IP address will not change through machine or network reboots.
-{% endhint %}
+> It is recommended to set your host machine's IP address to be statically assigned instead of dynamic/DHCP. This ensures that the IP address will not change through machine or network reboots.
+{: .note }
 
 ### Check What Port is Being Used
 

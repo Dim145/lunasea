@@ -1,5 +1,10 @@
+---
+title: Tautulli
+parent: Modules
+nav_order: 8
+---
+
 # Tautulli
 
-{% hint style="info" %}
-Coming Soon!
-{% endhint %}
+> Coming Soon!
+{: .note }

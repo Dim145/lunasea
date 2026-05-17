@@ -1,3 +1,9 @@
+---
+title: Tracearr
+parent: Modules
+nav_order: 9
+---
+
 # Tracearr
 
 [Tracearr](https://tracearr.com) is a unified monitoring platform for **Plex, Jellyfin and Emby** servers. Unlike Tautulli (Plex-only), Tracearr consolidates all three media servers into a single dashboard with real-time stream tracking, playback analytics, watch history, and account-sharing detection.

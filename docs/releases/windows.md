@@ -1,10 +1,15 @@
+---
+title: Windows
+parent: Releases
+nav_order: 5
+---
+
 # Windows
 
 LunaSea is available on Windows 10+.
 
-{% hint style="info" %}
-If you want a stable experience, stick with stable releases. Want to test new builds of LunaSea? Read about the [build channels](https://docs.lunasea.app/getting-started/build-channels) to make the right choice!
-{% endhint %}
+> If you want a stable experience, stick with stable releases. Want to test new builds of LunaSea? Read about the [build channels](https://docs.lunasea.app/getting-started/build-channels) to make the right choice!
+{: .note }
 
 ## Build Bucket
 

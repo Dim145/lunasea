@@ -1,10 +1,15 @@
+---
+title: Lidarr
+parent: Modules
+nav_order: 1
+---
+
 # Lidarr
 
 Adding your Lidarr instance to LunaSea only requires a few steps to get going!
 
-{% hint style="warning" %}
-This documentation only covers adding Lidarr to LunaSea via local network (LAN) connections, and does not cover exposing Lidarr externally and connecting remotely.
-{% endhint %}
+> This documentation only covers adding Lidarr to LunaSea via local network (LAN) connections, and does not cover exposing Lidarr externally and connecting remotely.
+{: .warning }
 
 ## Preparing Lidarr
 
@@ -18,9 +23,8 @@ Finding your local network IP address of the machine running Lidarr is the first
 
 If you are running a different operating system, you can use any search engine to look up "Find local IP address on \<your operating system>" to typically find tons of guides for any platform.
 
-{% hint style="info" %}
-It is recommended to set your host machine's IP address to be statically assigned instead of dynamic/DHCP. This ensures that the IP address will not change through machine or network reboots.
-{% endhint %}
+> It is recommended to set your host machine's IP address to be statically assigned instead of dynamic/DHCP. This ensures that the IP address will not change through machine or network reboots.
+{: .note }
 
 ### Check What Port is Being Used
 

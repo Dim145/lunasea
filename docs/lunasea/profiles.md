@@ -1,3 +1,9 @@
+---
+title: Profiles
+parent: LunaSea
+nav_order: 2
+---
+
 # Profiles
 
 Do you have multiple instances of modules you want to add to LunaSea? Profiles are the way to do this! LunaSea allows you to have an infinite amount of profiles, each of which can contain a whole new set of configurations for modules.
@@ -10,9 +16,8 @@ To add, delete, or rename a profile, head to Settings -> Profiles. There are a s
 
 There are multiple ways to switch profiles within LunaSea.
 
-{% hint style="warning" %}
-Switching profiles clears all state-stored data from memory, and all fetched data will be fully refreshed.
-{% endhint %}
+> Switching profiles clears all state-stored data from memory, and all fetched data will be fully refreshed.
+{: .warning }
 
 ### Drawer
 

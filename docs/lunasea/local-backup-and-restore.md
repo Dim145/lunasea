@@ -1,10 +1,15 @@
+---
+title: Local Backup & Restore
+parent: LunaSea
+nav_order: 3
+---
+
 # Local Backup & Restore
 
 Alongside cloud-based backups, LunaSea offers the ability to create local backups of your configuration which you can manually transfer between devices and restore from. This gives you the freedom to have complete control of your data, and never have your configuration saved in a cloud server. Local backups are fully encrypted on-device, there is currently no option to create a non-encrypted backup.
 
-{% hint style="warning" %}
-Because all encryption and decryption occurs on-device, it is fully end-to-end encrypted. Forgetting the encryption password will result in there being no way to retrieve the configuration.
-{% endhint %}
+> Because all encryption and decryption occurs on-device, it is fully end-to-end encrypted. Forgetting the encryption password will result in there being no way to retrieve the configuration.
+{: .warning }
 
 ## Creating a Backup
 

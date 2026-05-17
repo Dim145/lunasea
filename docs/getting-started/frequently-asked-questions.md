@@ -1,3 +1,9 @@
+---
+title: Frequently Asked Questions
+parent: Getting Started
+nav_order: 3
+---
+
 # Frequently Asked Questions
 
 Read about some frequently asked questions related to LunaSea, development, and getting support for LunaSea!
@@ -20,9 +26,8 @@ Support for torrent clients is easily the most requested new module, and I defin
 
 Torrent support is not completely off the table and may come in the future! But at the moment, over 90% of the active user base is using iOS-based devices and it is hard to justify building a module (that takes a lot of time) that the mass majority of the user base would not be able to use.
 
-{% hint style="info" %}
-I am actively thinking of methods to get around this limitation, if you have any ideas consider commenting on the torrent client support [feedback board request](https://feedback.lunasea.app/b/New-Modules/p/torrent-clients-support).
-{% endhint %}
+> I am actively thinking of methods to get around this limitation, if you have any ideas consider commenting on the torrent client support [feedback board request](https://feedback.lunasea.app/b/New-Modules/p/torrent-clients-support).
+{: .note }
 
 ## Development
 
@@ -61,9 +66,8 @@ I consider all feedback and actively try to integrate new features that are requ
 * [Email](https://docs.lunasea.appmailto:hello@lunasea.app/)
 * [Reddit](https://www.lunasea.app/reddit)
 
-{% hint style="info" %}
-I may not have the ability to respond to all requests directly, but please be ensured I do read everything!
-{% endhint %}
+> I may not have the ability to respond to all requests directly, but please be ensured I do read everything!
+{: .note }
 
 ## Support
 

@@ -1,0 +1,51 @@
+title: LunaSea Documentation
+description: >-
+  Self-hosted controller for your *arr / Tautulli / Tracearr / Plex stack.
+  This site documents every module, release channel, and operational note.
+
+# `repository` is required by jekyll-github-metadata (pulled in by the
+# github-pages gem). Without it the build fails outside of a git checkout
+# — for instance inside a Docker build context where .git/ is absent.
+repository: Dim145/lunasea
+
+# Use Just the Docs as a remote theme (whitelisted by GitHub Pages).
+remote_theme: just-the-docs/just-the-docs
+
+color_scheme: dark
+search_enabled: true
+heading_anchors: true
+
+# Hide files we don't want rendered as pages.
+exclude:
+  - README.md            # rendered as the home page via index.md instead
+  - "*.sh"
+  - "_site/"
+  - "Gemfile"
+  - "Gemfile.lock"
+  - "Dockerfile"
+  - ".dockerignore"
+  - "vendor/"
+  - ".bundle/"
+
+# Plugins available on github-pages-gem.
+plugins:
+  - jekyll-remote-theme
+  - jekyll-relative-links
+  - jekyll-seo-tag
+
+# Make `[label](relative-path.md)` work as on GitHub.
+relative_links:
+  enabled: true
+  collections: true
+
+# Footer.
+footer_content: >-
+  &copy; LunaSea contributors. Built with
+  <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>.
+
+aux_links:
+  GitHub: https://github.com/Dim145/lunasea
+aux_links_new_tab: true
+
+# Hide the edit-on-github link by default.
+gh_edit_link: false

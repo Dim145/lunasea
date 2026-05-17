@@ -1,10 +1,16 @@
+---
+title: Custom Notifications
+parent: Notifications
+grand_parent: LunaSea
+nav_order: 6
+---
+
 # Custom Notifications
 
 ## Preparation
 
-{% hint style="warning" %}
-Custom notifications are considered an advanced feature, and requires basic knowledge of JSON syntax and creating your own scripts/tools to handle sending the payloads.
-{% endhint %}
+> Custom notifications are considered an advanced feature, and requires basic knowledge of JSON syntax and creating your own scripts/tools to handle sending the payloads.
+{: .warning }
 
 * Read through the main [Notifications](./) page
 * Copy any module's device-based or user-based webhook URL from LunaSea
@@ -17,105 +23,97 @@ Alternatively, you can copy the content of the URL after the last slash (after `
 
 Custom notifications are supported by both device-based and user-based notifications, with full endpoint details below:
 
-{% swagger baseUrl="https://notify.lunasea.app" path="/v1/custom/device/:device_id" method="post" summary="Device-Based" %}
-{% swagger-description %}
+`POST https://notify.lunasea.app/v1/custom/device/:device_id` — Device-Based
+
 Send a custom notification using a device token to a single device running LunaSea.
-{% endswagger-description %}
 
-{% swagger-parameter name="device_id" type="string" in="path" required="true" %}
-The Firebase device identifier
-{% endswagger-parameter %}
+**Parameters**
 
-{% swagger-parameter name="title" type="string" in="body" required="true" %}
-The notification's title.
-{% endswagger-parameter %}
-
-{% swagger-parameter name="body" type="string" in="body" required="true" %}
-The notification's body content.
-{% endswagger-parameter %}
-
-{% swagger-parameter name="image" type="string" in="body" required="false" %}
-A
+- `device_id` (string, in path) _(required)_ — The Firebase device identifier
+- `title` (string, in body) _(required)_ — The notification's title.
+- `body` (string, in body) _(required)_ — The notification's body content.
+- `image` (string, in body) — A
 
 **publicly accessible**
 
 URL to an image that will be attached to the notification.
-{% endswagger-parameter %}
 
-{% swagger-response status="200" description="" %}
-```javascript
+**Responses**
+
+- `200`
+
+  ```
+  ```javascript
 {
     "status": "OK"
 }
 ```
-{% endswagger-response %}
+  ```
+- `500`
 
-{% swagger-response status="500" description="" %}
-```javascript
+  ```
+  ```javascript
 {
     "status": "Internal Server Error"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+  ```
 
-{% swagger baseUrl="https://notify.lunasea.app" path="/v1/custom/user/:user_id" method="post" summary="User-Based" %}
-{% swagger-description %}
+
+`POST https://notify.lunasea.app/v1/custom/user/:user_id` — User-Based
+
 Send a custom notification using a user token to all devices signed into that LunaSea account.
-{% endswagger-description %}
 
-{% swagger-parameter name="user_id" type="string" in="path" required="true" %}
-The Firebase user identifier
-{% endswagger-parameter %}
+**Parameters**
 
-{% swagger-parameter name="title" type="string" in="body" required="true" %}
-The notification's title.
-{% endswagger-parameter %}
-
-{% swagger-parameter name="body" type="string" in="body" required="true" %}
-The notification's body content.
-{% endswagger-parameter %}
-
-{% swagger-parameter name="image" type="string" in="body" required="false" %}
-A
+- `user_id` (string, in path) _(required)_ — The Firebase user identifier
+- `title` (string, in body) _(required)_ — The notification's title.
+- `body` (string, in body) _(required)_ — The notification's body content.
+- `image` (string, in body) — A
 
 **publicly accessible**
 
 URL to an image that will be attached to the notification.
-{% endswagger-parameter %}
 
-{% swagger-response status="200" description="" %}
-```javascript
+**Responses**
+
+- `200`
+
+  ```
+  ```javascript
 {
     "status": "OK"
 }
 ```
-{% endswagger-response %}
+  ```
+- `400`
 
-{% swagger-response status="400" description="" %}
-```javascript
+  ```
+  ```javascript
 {
     "status": "No devices found"
 }
 ```
-{% endswagger-response %}
+  ```
+- `404`
 
-{% swagger-response status="404" description="" %}
-```javascript
+  ```
+  ```javascript
 {
     "status": "Invalid User ID"
 }
 ```
-{% endswagger-response %}
+  ```
+- `500`
 
-{% swagger-response status="500" description="" %}
-```javascript
+  ```
+  ```javascript
 {
     "status": "Internal Server Error"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+  ```
+
 
 ## Troubleshooting
 

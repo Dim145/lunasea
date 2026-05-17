@@ -1,3 +1,10 @@
+---
+title: Sonarr
+parent: Notifications
+grand_parent: LunaSea
+nav_order: 3
+---
+
 # Sonarr
 
 ## Preparation
@@ -9,12 +16,12 @@
 
 In Sonarr's web GUI, head to Settings -> Connect, hit the "+" button to add a new connection and select "Webhook". Please follow each section below to setup the webhook:
 
-{% tabs %}
-{% tab title="Name" %}
-Select any name, for example "LunaSea".
-{% endtab %}
+**Name**
 
-{% tab title="Triggers" %}
+Select any name, for example "LunaSea".
+
+**Triggers**
+
 Select which events should trigger a push notification. The following triggers are supported:
 
 |               Trigger              | Supported? |
@@ -29,40 +36,37 @@ Select which events should trigger a push notification. The following triggers a
 |           On Health Issue          |      ✅     |
 |       Include Health Warnings      |      ✅     |
 |        On Application Update       |      ❌     |
-{% endtab %}
 
-{% tab title="Tags" %}
+**Tags**
+
 You can _**optionally**_ select a tag that must be attached to a series for the webhook to get triggered.
 
 This can be useful when working with a large media collection to only receive notifications for content you are actively monitoring.
 
 If you want to receive notifications for all series, leave the tags area empty.
-{% endtab %}
 
-{% tab title="URL" %}
+**URL**
+
 Paste the full device-based or user-based URL that was copied from LunaSea.
 
 Each webhook can support a single user-based or device-based webhook URL. Attaching multiple device-based or user-based webhooks to a single Sonarr instance requires setting up multiple webhooks.
-{% endtab %}
 
-{% tab title="Method" %}
+**Method**
+
 Keep the method on "**POST**". Changing the method to "**PUT**" will cause the webhooks to fail.
-{% endtab %}
 
-{% tab title="Username" %}
-{% hint style="warning" %}
-This step is only required if you are _**not**_ using the default LunaSea profile (`default`). LunaSea will assume the default profile when none is supplied.
+**Username**
 
-Correctly setting up this field is critically important to get full deep-linking support.
-{% endhint %}
+> This step is only required if you are _**not**_ using the default LunaSea profile (`default`). LunaSea will assume the default profile when none is supplied.
+>
+> Correctly setting up this field is critically important to get full deep-linking support.
+{: .warning }
 
 The username field should be an **exact match** to the profile that this module instance was added to within LunaSea. Capitalization and punctuation _does_ matter.
-{% endtab %}
 
-{% tab title="Password" %}
+**Password**
+
 Leave the password field empty. Setting this field will currently have no effect.
-{% endtab %}
-{% endtabs %}
 
 Once setup, close LunaSea and run the webhook test in Sonarr. You should receive a new notification letting you know that LunaSea is ready to receive Sonarr notifications!
 

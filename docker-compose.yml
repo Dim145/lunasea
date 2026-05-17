@@ -1,0 +1,88 @@
+# Reference deployment for the LunaSea stack.
+#
+# Every container here is run with defence-in-depth flags on top of the
+# rootless images:
+#   - read_only filesystem (writable paths are mounted as tmpfs)
+#   - all Linux capabilities dropped except NET_BIND_SERVICE
+#   - no_new_privileges (no setuid escalation)
+#   - healthcheck-driven restart policy
+#
+# Replace the `image:` tags with the GHCR ones once your release pipeline
+# has pushed them (`ghcr.io/<owner>/<repo>/<image>:<tag>`). The `build:`
+# blocks are kept so you can also `docker compose build` locally.
+
+services:
+  web:
+    image: lunasea-web:latest
+    build:
+      context: ./lunasea
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=8m
+      - /var/cache/nginx:size=32m
+      - /var/run:size=4m
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "--spider", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  docs:
+    image: lunasea-docs:latest
+    build:
+      context: ./docs
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=8m
+      - /var/cache/nginx:size=32m
+      - /var/run:size=4m
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "--spider", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  notifications:
+    image: lunasea-notification-service:latest
+    build:
+      context: ./lunasea-notification-service
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=16m
+    environment:
+      # Required. Copy from .env.sample of the notification service.
+      NTFY_BASE_URL: ${NTFY_BASE_URL}
+      FANART_TV_API_KEY: ${FANART_TV_API_KEY}
+      THEMOVIEDB_API_KEY: ${THEMOVIEDB_API_KEY}
+      # Optional — pick ONE auth mode for ntfy.
+      NTFY_TOKEN: ${NTFY_TOKEN:-}
+      NTFY_USERNAME: ${NTFY_USERNAME:-}
+      NTFY_PASSWORD: ${NTFY_PASSWORD:-}
+      # Optional ingress-side defence-in-depth on the webhook URL.
+      WEBHOOK_TOKEN: ${WEBHOOK_TOKEN:-}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "--spider", "http://127.0.0.1:9000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
