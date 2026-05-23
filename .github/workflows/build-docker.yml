@@ -66,20 +66,41 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Parse the workflow_dispatch `version` input (if provided) so we can
+      # tag major / major.minor / full alongside the explicit version.
+      - name: Parse manual version
+        id: parsed
+        if: github.event_name == 'workflow_dispatch' && inputs.version != ''
+        run: |
+          VERSION="${{ inputs.version }}"
+          VERSION="${VERSION#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "major_minor=${MAJOR}.${MINOR}" >> "$GITHUB_OUTPUT"
+          echo "major=${MAJOR}" >> "$GITHUB_OUTPUT"
+
       - name: Generate tags & labels
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ steps.ref.outputs.image }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest,enable=${{ !github.event.release.prerelease }}
+            # --- release-triggered: semver patterns read github.ref (a tag) ---
+            type=semver,pattern={{version}},enable=${{ github.event_name == 'release' }}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ github.event_name == 'release' }}
+            type=semver,pattern={{major}},enable=${{ github.event_name == 'release' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
+            # --- workflow_dispatch with `version` input ---
+            type=raw,value=${{ steps.parsed.outputs.version }},enable=${{ steps.parsed.outputs.version != '' }}
+            type=raw,value=${{ steps.parsed.outputs.major_minor }},enable=${{ steps.parsed.outputs.major_minor != '' }}
+            type=raw,value=${{ steps.parsed.outputs.major }},enable=${{ steps.parsed.outputs.major != '' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'workflow_dispatch' && inputs.tag_latest }}
+            # --- workflow_dispatch without `version` (sha-only fallback) ---
+            type=sha,format=short,enable=${{ github.event_name == 'workflow_dispatch' && inputs.version == '' }}
           labels: |
             org.opencontainers.image.title=${{ matrix.image.name }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.version=${{ github.event.release.tag_name }}
+            org.opencontainers.image.version=${{ github.event.release.tag_name || inputs.version }}
 
       # Build once for the local Docker daemon so we can scan before push.
       # The multi-arch push happens in a separate step that reuses the
