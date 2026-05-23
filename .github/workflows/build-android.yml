@@ -1,0 +1,152 @@
+name: Build Android APK & attach to release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing release tag to attach the APK to (e.g. v1.2.3). Leave blank to skip upload.'
+        required: false
+        type: string
+
+permissions:
+  contents: write   # upload assets to the release
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lunasea
+    env:
+      FLUTTER_VERSION: 3.41.9
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Show toolchain versions
+        run: |
+          flutter --version
+          dart --version
+          java -version
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Generate code (environment, localization, build_runner)
+        env:
+          FLAVOR: stable
+          COMMIT: ${{ github.sha }}
+          BUILD: ${{ github.run_number }}
+        run: |
+          dart run environment_config:generate
+          dart scripts/generate_localization.dart
+          dart run build_runner build --delete-conflicting-outputs
+
+      # ----------------------------------------------------------------
+      # Keystore: either use repo secrets (preferred), or generate an
+      # ephemeral one on the fly so the workflow always produces an APK.
+      # ----------------------------------------------------------------
+      - name: Prepare keystore
+        id: keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${ANDROID_KEYSTORE_BASE64}" \
+                && -n "${ANDROID_KEYSTORE_PASSWORD}" \
+                && -n "${ANDROID_KEY_ALIAS}" \
+                && -n "${ANDROID_KEY_PASSWORD}" ]]; then
+            echo "Using release keystore from repo secrets."
+            echo "${ANDROID_KEYSTORE_BASE64}" | base64 -d > android/key.jks
+            cat > android/key.properties <<EOF
+          storePassword=${ANDROID_KEYSTORE_PASSWORD}
+          keyPassword=${ANDROID_KEY_PASSWORD}
+          keyAlias=${ANDROID_KEY_ALIAS}
+          storeFile=../key.jks
+          EOF
+            echo "kind=release" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::No ANDROID_KEYSTORE_* secrets set — generating an ephemeral keystore."
+            echo "::warning::Resulting APK can be installed, but cannot update in-place from a previous install signed with a different key."
+            keytool -genkey -v \
+              -keystore android/key.jks \
+              -storepass ephemeral \
+              -keypass ephemeral \
+              -alias lunasea \
+              -keyalg RSA -keysize 2048 -validity 36500 \
+              -dname "CN=lunasea-ci, OU=ephemeral, O=lunasea, L=local, S=local, C=US"
+            cat > android/key.properties <<EOF
+          storePassword=ephemeral
+          keyPassword=ephemeral
+          keyAlias=lunasea
+          storeFile=../key.jks
+          EOF
+            echo "kind=ephemeral" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build APK (release)
+        env:
+          FLAVOR: stable
+          COMMIT: ${{ github.sha }}
+          BUILD: ${{ github.run_number }}
+        run: |
+          flutter build apk --release \
+            --dart-define=FLAVOR=stable \
+            --dart-define=COMMIT=${{ github.sha }} \
+            --dart-define=BUILD=${{ github.run_number }} \
+            --build-number=${{ github.run_number }}
+
+      - name: Compute APK name
+        id: apk
+        run: |
+          # The version field in pubspec.yaml has the shape `X.Y.Z+N`, take
+          # the X.Y.Z part. On a release-triggered run, prefer the tag name.
+          VERSION="${{ github.event.release.tag_name }}"
+          if [[ -z "${VERSION}" ]]; then
+            VERSION=$(grep -E '^version:' pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
+          fi
+          # Strip leading `v` if present.
+          VERSION="${VERSION#v}"
+          SUFFIX="${{ steps.keystore.outputs.kind == 'ephemeral' && '-unsigned' || '' }}"
+          NAME="lunasea-${VERSION}-android${SUFFIX}.apk"
+          mkdir -p ../output
+          cp build/app/outputs/flutter-apk/app-release.apk "../output/${NAME}"
+          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+          echo "path=output/${NAME}" >> "$GITHUB_OUTPUT"
+          ls -lh "../output/"
+        working-directory: lunasea
+
+      - name: Upload APK as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lunasea-android-apk
+          path: ${{ steps.apk.outputs.path }}
+          retention-days: 30
+
+      - name: Attach APK to GitHub Release
+        if: github.event_name == 'release' || inputs.release_tag != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name || inputs.release_tag }}
+          files: ${{ steps.apk.outputs.path }}
+          fail_on_unmatched_files: true
