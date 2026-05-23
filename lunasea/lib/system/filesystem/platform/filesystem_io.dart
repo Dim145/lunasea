@@ -98,9 +98,11 @@ class _Mobile extends _Shared {
       Rect? rect;
       if (box != null) rect = box.localToGlobal(Offset.zero) & box.size;
 
-      ShareResult result = await Share.shareXFiles(
-        [XFile(path)],
-        sharePositionOrigin: rect,
+      ShareResult result = await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(path)],
+          sharePositionOrigin: rect,
+        ),
       );
       switch (result.status) {
         case ShareResultStatus.success:

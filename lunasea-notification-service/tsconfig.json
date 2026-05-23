@@ -1,16 +1,17 @@
 {
   "compilerOptions": {
     "esModuleInterop": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "node16",
+    "moduleResolution": "node16",
     "outDir": "dist",
+    "rootDir": "src",
     "sourceMap": true,
     "strict": true,
-    "target": "es2018",
+    "target": "es2022",
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
   "exclude": ["node_modules", "dist", ".git"],
   "include": ["src/**/*"],
-  "lib": ["ES2018"]
+  "lib": ["ES2022"]
 }
