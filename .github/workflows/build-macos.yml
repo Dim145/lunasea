@@ -1,0 +1,173 @@
+name: Build macOS app & attach to release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing release tag to attach the artifacts to (e.g. v1.2.3). Leave blank to skip upload.'
+        required: false
+        type: string
+
+permissions:
+  contents: write   # upload assets to the release
+
+# Opt JavaScript-based actions into the Node.js 24 runtime ahead of the
+# 2026-06-02 default switch. Silences the deprecation warning emitted by
+# checkout/setup-java/upload-artifact/etc. on the older v4 majors.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  build:
+    name: Build macOS app
+    # macOS runner is required for Xcode. macOS minutes count 10x against
+    # the Actions quota — only run when actually shipping macOS.
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: lunasea
+    env:
+      FLUTTER_VERSION: 3.41.9
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+          architecture: x64
+
+      - name: Show toolchain versions
+        run: |
+          flutter --version
+          dart --version
+          xcodebuild -version
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Generate code (environment, localization, build_runner)
+        env:
+          FLAVOR: stable
+          COMMIT: ${{ github.sha }}
+          BUILD: ${{ github.run_number }}
+        run: |
+          dart run environment_config:generate
+          dart scripts/generate_localization.dart
+          dart run build_runner build
+
+      - name: Install CocoaPods
+        run: |
+          cd macos
+          pod install --repo-update
+
+      # ----------------------------------------------------------------
+      # Unsigned build. Unlike iOS, macOS will still execute the binary
+      # — users just have to right-click → Open the first time to
+      # confirm past Gatekeeper, or run:
+      #   xattr -d com.apple.quarantine /Applications/LunaSea.app
+      # Signed + notarized builds require Apple Developer secrets; see
+      # macos/fastlane/Fastfile for the match-based setup.
+      # ----------------------------------------------------------------
+      - name: Build macOS (release, unsigned)
+        env:
+          FLAVOR: stable
+          COMMIT: ${{ github.sha }}
+          BUILD: ${{ github.run_number }}
+        run: |
+          flutter build macos --release \
+            --dart-define=FLAVOR=stable \
+            --dart-define=COMMIT=${{ github.sha }} \
+            --dart-define=BUILD=${{ github.run_number }} \
+            --build-number=${{ github.run_number }}
+
+      - name: Compute version
+        id: version
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          if [[ -z "${VERSION}" ]]; then
+            VERSION=$(grep -E '^version:' pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
+          fi
+          VERSION="${VERSION#v}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: ${VERSION}"
+
+      - name: Locate .app bundle
+        id: app
+        run: |
+          set -euo pipefail
+          # `flutter build macos` writes to build/macos/Build/Products/Release.
+          # The `.app` name follows the xcconfig PRODUCT_NAME (LunaSea).
+          APP_PATH=$(find build/macos/Build/Products/Release -maxdepth 1 -name "*.app" -type d | head -1)
+          if [[ -z "${APP_PATH}" ]]; then
+            echo "::error::no .app bundle found in build/macos/Build/Products/Release"
+            ls -lh build/macos/Build/Products/Release || true
+            exit 1
+          fi
+          echo "app_path=${APP_PATH}" >> "$GITHUB_OUTPUT"
+          echo "app_name=$(basename "${APP_PATH}")" >> "$GITHUB_OUTPUT"
+          echo "Found: ${APP_PATH}"
+
+      - name: Package .zip (portable)
+        id: zip
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          NAME="lunasea-${VERSION}-macos-unsigned.zip"
+          mkdir -p ../output
+          # `ditto` preserves macOS metadata (resource forks, code signatures
+          # when they exist) that a vanilla `zip` would strip. It is the
+          # Apple-recommended way to archive .app bundles.
+          ditto -c -k --sequesterRsrc --keepParent \
+            "${{ steps.app.outputs.app_path }}" \
+            "../output/${NAME}"
+          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+          echo "path=output/${NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Package .dmg (disk image)
+        id: dmg
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          NAME="lunasea-${VERSION}-macos-unsigned.dmg"
+          mkdir -p ../output
+
+          # Stage the .app + an /Applications symlink so the disk image
+          # opens with the familiar "drag the icon to Applications" UX.
+          STAGING="$(mktemp -d)"
+          cp -R "${{ steps.app.outputs.app_path }}" "${STAGING}/"
+          ln -s /Applications "${STAGING}/Applications"
+
+          hdiutil create -volname "LunaSea" \
+            -srcfolder "${STAGING}" \
+            -ov -format UDZO \
+            "../output/${NAME}"
+          rm -rf "${STAGING}"
+          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+          echo "path=output/${NAME}" >> "$GITHUB_OUTPUT"
+          ls -lh "../output/"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lunasea-macos
+          path: |
+            ${{ steps.zip.outputs.path }}
+            ${{ steps.dmg.outputs.path }}
+          retention-days: 30
+
+      - name: Attach artifacts to GitHub Release
+        if: github.event_name == 'release' || inputs.release_tag != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name || inputs.release_tag }}
+          files: |
+            ${{ steps.zip.outputs.path }}
+            ${{ steps.dmg.outputs.path }}
+          fail_on_unmatched_files: true

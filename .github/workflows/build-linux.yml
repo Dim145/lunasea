@@ -1,0 +1,178 @@
+name: Build Linux desktop & attach to release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing release tag to attach the artifacts to (e.g. v1.2.3). Leave blank to skip upload.'
+        required: false
+        type: string
+
+permissions:
+  contents: write   # upload assets to the release
+
+# Opt JavaScript-based actions into the Node.js 24 runtime ahead of the
+# 2026-06-02 default switch. Silences the deprecation warning emitted by
+# checkout/setup-java/upload-artifact/etc. on the older v4 majors.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  build:
+    name: Build Linux x86_64
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lunasea
+    env:
+      FLUTTER_VERSION: 3.41.9
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Flutter's `linux` target builds against GTK3 + Clang/CMake/Ninja.
+      # `libblkid-dev` and `liblzma-dev` are pulled in by the engine's
+      # filesystem helpers and are not on the ubuntu-latest image by default.
+      - name: Install Linux build dependencies
+        # ubuntu-latest already has g++/libstdc++ pre-installed; we only need
+        # the GTK/lzma/blkid headers plus the Flutter Linux toolchain.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang cmake ninja-build pkg-config \
+            libgtk-3-dev libblkid-dev liblzma-dev
+        working-directory: .
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Show toolchain versions
+        run: |
+          flutter --version
+          dart --version
+          cmake --version | head -1
+          clang --version | head -1
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Generate code (environment, localization, build_runner)
+        env:
+          FLAVOR: stable
+          COMMIT: ${{ github.sha }}
+          BUILD: ${{ github.run_number }}
+        run: |
+          dart run environment_config:generate
+          dart scripts/generate_localization.dart
+          dart run build_runner build
+
+      - name: Build Linux (release)
+        env:
+          FLAVOR: stable
+          COMMIT: ${{ github.sha }}
+          BUILD: ${{ github.run_number }}
+        run: |
+          flutter build linux --release \
+            --dart-define=FLAVOR=stable \
+            --dart-define=COMMIT=${{ github.sha }} \
+            --dart-define=BUILD=${{ github.run_number }} \
+            --build-number=${{ github.run_number }}
+
+      # ----------------------------------------------------------------
+      # Package the bundle two ways:
+      #   - .tar.gz: portable, drop-in anywhere
+      #   - .deb: Debian/Ubuntu install with desktop entry + symlink
+      # The Debian skeleton lives in `lunasea/debian/`. We rewrite the
+      # control file from scratch to inject Version and pin the runtime
+      # GTK/lzma dependencies — the checked-in template was missing both.
+      # ----------------------------------------------------------------
+      - name: Compute version
+        id: version
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          if [[ -z "${VERSION}" ]]; then
+            VERSION=$(grep -E '^version:' pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
+          fi
+          VERSION="${VERSION#v}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: ${VERSION}"
+
+      - name: Package tar.gz
+        id: targz
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          NAME="lunasea-${VERSION}-linux-x86_64"
+          mkdir -p "../output/${NAME}"
+          cp -r build/linux/x64/release/bundle/. "../output/${NAME}/"
+          tar -czf "../output/${NAME}.tar.gz" -C ../output "${NAME}"
+          rm -rf "../output/${NAME}"
+          ls -lh "../output/"
+          echo "name=${NAME}.tar.gz" >> "$GITHUB_OUTPUT"
+          echo "path=output/${NAME}.tar.gz" >> "$GITHUB_OUTPUT"
+
+      - name: Package .deb
+        id: deb
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          DEB_DIR="../output/lunasea_${VERSION}_amd64"
+          mkdir -p "${DEB_DIR}/DEBIAN" "${DEB_DIR}/usr/share/lunasea"
+
+          # Inject the Flutter bundle and reuse the desktop entry / icon
+          # already checked into `debian/`. The postinst symlinks the
+          # binary into /usr/bin so `Exec=/usr/bin/lunasea` resolves.
+          cp -r build/linux/x64/release/bundle/. "${DEB_DIR}/usr/share/lunasea/"
+          cp -r debian/usr/. "${DEB_DIR}/usr/"
+          cp debian/DEBIAN/postinst "${DEB_DIR}/DEBIAN/postinst"
+          cp debian/DEBIAN/postrm "${DEB_DIR}/DEBIAN/postrm"
+          chmod 0755 "${DEB_DIR}/DEBIAN/postinst" "${DEB_DIR}/DEBIAN/postrm"
+
+          # Rewrite control with proper field formatting + Version +
+          # runtime deps. The in-repo template was missing all three.
+          cat > "${DEB_DIR}/DEBIAN/control" <<EOF
+          Package: lunasea
+          Version: ${VERSION}
+          Architecture: amd64
+          Section: utils
+          Priority: optional
+          Maintainer: LunaSea Support <hello@lunasea.app>
+          Depends: libgtk-3-0, libblkid1, liblzma5
+          Description: Self-hosted software controller built using Flutter
+           LunaSea is a fully featured controller for self-hosted media and
+           download applications.
+          EOF
+
+          dpkg-deb --build --root-owner-group "${DEB_DIR}"
+          # `dpkg-deb --build DIR` writes alongside DIR as `DIR.deb`.
+          DEB_FILE="${DEB_DIR}.deb"
+          rm -rf "${DEB_DIR}"
+          ls -lh "../output/"
+          echo "name=$(basename "${DEB_FILE}")" >> "$GITHUB_OUTPUT"
+          echo "path=output/$(basename "${DEB_FILE}")" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lunasea-linux-x86_64
+          path: |
+            ${{ steps.targz.outputs.path }}
+            ${{ steps.deb.outputs.path }}
+          retention-days: 30
+
+      - name: Attach artifacts to GitHub Release
+        if: github.event_name == 'release' || inputs.release_tag != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name || inputs.release_tag }}
+          files: |
+            ${{ steps.targz.outputs.path }}
+            ${{ steps.deb.outputs.path }}
+          fail_on_unmatched_files: true

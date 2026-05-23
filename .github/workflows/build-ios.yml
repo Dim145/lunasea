@@ -1,0 +1,131 @@
+name: Build iOS IPA & attach to release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing release tag to attach the IPA to (e.g. v1.2.3). Leave blank to skip upload.'
+        required: false
+        type: string
+
+permissions:
+  contents: write   # upload assets to the release
+
+# Opt JavaScript-based actions into the Node.js 24 runtime ahead of the
+# 2026-06-02 default switch. Silences the deprecation warning emitted by
+# checkout/setup-java/upload-artifact/etc. on the older v4 majors.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  build:
+    name: Build iOS IPA
+    # macOS runner is required for Xcode. Note: macOS minutes count 10x
+    # against the Actions quota — only run when actually shipping iOS.
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: lunasea
+    env:
+      FLUTTER_VERSION: 3.41.9
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+          architecture: x64
+
+      - name: Show toolchain versions
+        run: |
+          flutter --version
+          dart --version
+          xcodebuild -version
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Generate code (environment, localization, build_runner)
+        env:
+          FLAVOR: stable
+          COMMIT: ${{ github.sha }}
+          BUILD: ${{ github.run_number }}
+        run: |
+          dart run environment_config:generate
+          dart scripts/generate_localization.dart
+          dart run build_runner build
+
+      # The CocoaPods cache lives outside the working directory; the
+      # flutter-action does not pre-warm it, so install pods explicitly.
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install --repo-update
+
+      # ----------------------------------------------------------------
+      # Build path:
+      #   - `--no-codesign` skips Apple signing so the workflow runs
+      #     without certificates. The resulting IPA can be re-signed
+      #     locally (Sideloadly, AltStore, fastlane) or distributed via
+      #     a self-hosted MDM that re-signs at install time.
+      #   - Signed builds require fastlane match plus provisioning
+      #     secrets we do not configure here; see ios/fastlane/Fastfile
+      #     if you want to wire them up.
+      # ----------------------------------------------------------------
+      - name: Build iOS (release, unsigned)
+        env:
+          FLAVOR: stable
+          COMMIT: ${{ github.sha }}
+          BUILD: ${{ github.run_number }}
+        run: |
+          flutter build ios --release --no-codesign \
+            --dart-define=FLAVOR=stable \
+            --dart-define=COMMIT=${{ github.sha }} \
+            --dart-define=BUILD=${{ github.run_number }} \
+            --build-number=${{ github.run_number }}
+
+      - name: Package IPA
+        id: ipa
+        run: |
+          set -euo pipefail
+          VERSION="${{ github.event.release.tag_name }}"
+          if [[ -z "${VERSION}" ]]; then
+            VERSION=$(grep -E '^version:' pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
+          fi
+          VERSION="${VERSION#v}"
+
+          # Per Apple's IPA layout, the `.app` bundle must live inside a
+          # top-level `Payload/` directory in the zip.
+          STAGING="$(mktemp -d)"
+          mkdir -p "${STAGING}/Payload"
+          cp -R build/ios/iphoneos/Runner.app "${STAGING}/Payload/"
+
+          NAME="lunasea-${VERSION}-ios-unsigned.ipa"
+          mkdir -p ../output
+          (cd "${STAGING}" && zip -qr "${OLDPWD}/../output/${NAME}" Payload)
+          rm -rf "${STAGING}"
+          ls -lh "../output/"
+          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+          echo "path=output/${NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload IPA as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lunasea-ios-ipa
+          path: ${{ steps.ipa.outputs.path }}
+          retention-days: 30
+
+      - name: Attach IPA to GitHub Release
+        if: github.event_name == 'release' || inputs.release_tag != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name || inputs.release_tag }}
+          files: ${{ steps.ipa.outputs.path }}
+          fail_on_unmatched_files: true
