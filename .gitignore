@@ -1,3 +1,9 @@
 .DS_Store
 .idea
 .claude
+
+# Android signing keys — must never be committed to a public repo.
+# Encode them as a GitHub secret instead (see .github/workflows/build-android.yml).
+*.jks
+*.keystore
+key.properties
