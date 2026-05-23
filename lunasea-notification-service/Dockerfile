@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.6
 
-ARG NODE_VERSION=22
+ARG NODE_VERSION=24
 
 # ---- Build stage ----
 FROM node:${NODE_VERSION}-alpine AS build
@@ -19,39 +19,27 @@ RUN npm run build
 RUN npm prune --omit=dev
 
 # ---- Runtime stage ----
-# `node:22-alpine` ships with a pre-created `node` user (UID/GID 1000).
-# We chown the app dir and drop to that user — no root at runtime.
-FROM node:${NODE_VERSION}-alpine AS runtime
+# `gcr.io/distroless/nodejs24-debian12:nonroot` ships Node 24, a `nonroot`
+# user (UID 65532), and nothing else — no shell, no apk/apt, no npm, no
+# wget. The image's ENTRYPOINT is already `["/nodejs/bin/node"]`, so CMD
+# below is just the script's argv.
+FROM gcr.io/distroless/nodejs24-debian12:nonroot AS runtime
 LABEL org.opencontainers.image.source="https://github.com/JagandeepBrar/LunaSea-Notification-Service"
 LABEL org.opencontainers.image.title="lunasea-notification-service"
 
-# tini reaps zombies and forwards signals; install while still root.
-# At the same time, strip `npm` / `npx` / `corepack`: the runtime never
-# invokes them, but their bundled deps (picomatch, ip-address,
-# brace-expansion) keep triggering Trivy CVE alerts. Removing them
-# eliminates the attack surface entirely.
-RUN apk add --no-cache tini wget \
-    && rm -rf /usr/local/lib/node_modules/npm \
-              /usr/local/lib/node_modules/corepack \
-              /usr/local/bin/npm \
-              /usr/local/bin/npx \
-              /usr/local/bin/corepack
+WORKDIR /app
 
-WORKDIR /usr/src/app
-
-# Lay down sources owned by the `node` user so the runtime can read them
-# without ever needing root.
-COPY --from=build --chown=node:node /usr/src/app/node_modules ./node_modules
-COPY --from=build --chown=node:node /usr/src/app/dist ./dist
-COPY --from=build --chown=node:node /usr/src/app/package.json ./package.json
-
-USER node
+# Use numeric UID:GID — distroless has /etc/passwd entries, but pinning
+# to 65532 avoids any reliance on name resolution.
+COPY --from=build --chown=65532:65532 /usr/src/app/node_modules ./node_modules
+COPY --from=build --chown=65532:65532 /usr/src/app/dist ./dist
+COPY --from=build --chown=65532:65532 /usr/src/app/package.json ./package.json
 
 ENV NODE_ENV=production
 EXPOSE 9000
 
+# No wget in distroless; probe via Node's built-in http module instead.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget -qO- --spider http://127.0.0.1:9000/health || exit 1
+    CMD ["/nodejs/bin/node", "-e", "require('http').get('http://127.0.0.1:9000/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
 
-ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "-r", "dotenv/config", "dist/index.js"]
+CMD ["-r", "dotenv/config", "dist/index.js"]
