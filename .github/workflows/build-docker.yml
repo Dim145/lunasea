@@ -23,7 +23,9 @@ jobs:
     name: ${{ matrix.image.name }}
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      # `contents: write` is needed by anchore/sbom-action when triggered
+      # from a release event — it attaches the SBOM as a release asset.
+      contents: write
       packages: write
       # Required for uploading SARIF (Trivy scan results) to the Security tab.
       security-events: write
@@ -84,6 +86,10 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ steps.ref.outputs.image }}
+          # Disable the auto `:latest` detection so we control it via the
+          # explicit `type=raw,value=latest,enable=...` rules below — this
+          # avoids generating the tag twice when both kick in.
+          flavor: latest=false
           tags: |
             # --- release-triggered: semver patterns read github.ref (a tag) ---
             type=semver,pattern={{version}},enable=${{ github.event_name == 'release' }}
