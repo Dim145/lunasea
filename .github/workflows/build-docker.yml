@@ -4,6 +4,16 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Semver version to tag the images with (e.g. 1.2.3). Leave blank to tag with the short commit SHA only.'
+        required: false
+        type: string
+      tag_latest:
+        description: 'Also push the `latest` tag (skip for prereleases or test builds).'
+        required: false
+        default: true
+        type: boolean
 
 env:
   REGISTRY: ghcr.io
