@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(runner LANGUAGES CXX)
 
 set(BINARY_NAME "lunasea")
-set(APPLICATION_ID "app.lunasea.lunasea")
+set(APPLICATION_ID "app.dim145.lunasea")
 
 cmake_policy(SET CMP0063 NEW)
 

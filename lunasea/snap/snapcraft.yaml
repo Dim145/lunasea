@@ -9,7 +9,7 @@ slots:
   dbus-lunasea:
     interface: dbus
     bus: session
-    name: app.lunasea.lunasea
+    name: app.dim145.lunasea
 apps:
   lunasea:
     command: lunasea

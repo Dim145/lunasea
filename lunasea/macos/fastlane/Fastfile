@@ -74,7 +74,7 @@ platform :mac do
       export_method: "developer-id",
       export_options: {
         provisioningProfiles: {
-          "app.lunasea.lunasea" => "match Direct app.lunasea.lunasea macos",
+          "app.dim145.lunasea" => "match Direct app.dim145.lunasea macos",
         }
       }
     )
@@ -111,7 +111,7 @@ platform :mac do
       export_method: "app-store",
       export_options: {
         provisioningProfiles: {
-          "app.lunasea.lunasea" => "match AppStore app.lunasea.lunasea macos"
+          "app.dim145.lunasea" => "match AppStore app.dim145.lunasea macos"
         }
       },
     )
@@ -139,7 +139,7 @@ platform :mac do
       export_method: "developer-id",
       export_options: {
         provisioningProfiles: {
-          "app.lunasea.lunasea" => "match Direct app.lunasea.lunasea macos",
+          "app.dim145.lunasea" => "match Direct app.dim145.lunasea macos",
         }
       }
     )
@@ -149,7 +149,7 @@ platform :mac do
     end
     notarize(
       package: "LunaSea #{options[:build_version]}.dmg",
-      bundle_id: "app.lunasea.lunasea.DiskImage",
+      bundle_id: "app.dim145.lunasea.DiskImage",
       use_notarytool: true,
     )
     sh("mv", "../LunaSea #{options[:build_version]}.dmg", "../../output/lunasea-macos-amd64.dmg")

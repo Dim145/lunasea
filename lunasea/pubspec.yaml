@@ -99,7 +99,7 @@ msix_config:
   display_name: LunaSea
   enable_at_startup: false
   execution_alias: lunasea
-  identity_name: app.lunasea.lunasea
+  identity_name: app.dim145.lunasea
   install_certificate: false
   logo_path: assets\icon\icon_windows.png
   output_name: lunasea-windows-amd64

@@ -29,7 +29,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "app.lunasea.lunasea"
+    namespace = "app.dim145.lunasea"
     compileSdkVersion 36
     ndkVersion = "28.2.13676358"
 
@@ -47,7 +47,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "app.lunasea.lunasea"
+        applicationId "app.dim145.lunasea"
         minSdkVersion 24
         targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
