@@ -26,7 +26,16 @@ LABEL org.opencontainers.image.source="https://github.com/JagandeepBrar/LunaSea-
 LABEL org.opencontainers.image.title="lunasea-notification-service"
 
 # tini reaps zombies and forwards signals; install while still root.
-RUN apk add --no-cache tini wget
+# At the same time, strip `npm` / `npx` / `corepack`: the runtime never
+# invokes them, but their bundled deps (picomatch, ip-address,
+# brace-expansion) keep triggering Trivy CVE alerts. Removing them
+# eliminates the attack surface entirely.
+RUN apk add --no-cache tini wget \
+    && rm -rf /usr/local/lib/node_modules/npm \
+              /usr/local/lib/node_modules/corepack \
+              /usr/local/bin/npm \
+              /usr/local/bin/npx \
+              /usr/local/bin/corepack
 
 WORKDIR /usr/src/app
 
