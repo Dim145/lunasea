@@ -39,16 +39,14 @@ class _Desktop extends _Shared {
   @override
   Future<bool> save(BuildContext context, String name, List<int> data) async {
     try {
+      // file_picker 12 requires `bytes` and writes the file itself on
+      // every platform — no need for a separate writeAsBytesSync.
       String? path = await FilePicker.saveFile(
         fileName: name,
+        bytes: Uint8List.fromList(data),
         lockParentWindow: true,
       );
-      if (path != null) {
-        File file = File(path);
-        file.writeAsBytesSync(data);
-        return true;
-      }
-      return false;
+      return path != null;
     } catch (error, stack) {
       LunaLogger().error('Failed to save to filesystem', error, stack);
       rethrow;

@@ -7,3 +7,4 @@
 *.jks
 *.keystore
 key.properties
+.remember
