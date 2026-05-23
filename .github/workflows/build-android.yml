@@ -13,6 +13,12 @@ on:
 permissions:
   contents: write   # upload assets to the release
 
+# Opt JavaScript-based actions into the Node.js 24 runtime ahead of the
+# 2026-06-02 default switch. Silences the deprecation warning emitted by
+# checkout/setup-java/upload-artifact/etc. on the older v4 majors.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   build:
     name: Build APK

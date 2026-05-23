@@ -17,6 +17,10 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  # Opt JavaScript-based actions into the Node.js 24 runtime ahead of the
+  # 2026-06-02 default switch. Silences the deprecation warning emitted
+  # by checkout/upload-artifact/etc. on the older v4 majors.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
   build:
